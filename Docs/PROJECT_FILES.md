@@ -14,6 +14,7 @@
 | `tsconfig.json` | Строгие настройки TypeScript для исходного кода. |
 | `tsconfig.node.json` | Настройки TypeScript для конфигурации Vite. |
 | `vite.config.ts` | Конфигурация Vite и React-плагина. |
+| `vitest.config.ts` | Настройки Vitest, jsdom и React-плагина для тестов. |
 | `README.md` | Краткая инструкция по установке, запуску и режимам данных. |
 
 ## Документация
@@ -45,6 +46,8 @@
 | `src/api/dashboard.ts` | Загружает Dashboard и формирует CSV-отчёт из отображаемых данных. |
 | `src/api/orders.ts` | Загружает список заявок и отдельную заявку. |
 | `src/api/assignments.ts` | Загружает назначение и Decision Trace заявки. |
+| `src/api/executors.ts` | Загружает исполнителей и изменяет их активность. |
+| `src/api/rules.ts` | Загружает правила, переключает их и выполняет Test Rule. |
 
 ## Доменные типы
 
@@ -55,6 +58,8 @@
 | `src/types/assignment.ts` | Назначение и статусы назначения. |
 | `src/types/dashboard.ts` | KPI, временные ряды, нагрузка и fairness. |
 | `src/types/decisionTrace.ts` | Этапы решения, кандидаты и parent reuse. |
+| `src/types/executor.ts` | Статус, квалификация, лимиты и нагрузка исполнителя. |
+| `src/types/rule.ts` | Представление правила и его runtime-состояние. |
 
 ## Моки
 
@@ -64,6 +69,8 @@
 | `src/mocks/assignments.ts` | Назначения и трассы решений для демонстрационных заявок. |
 | `src/mocks/dashboard.ts` | KPI, динамика потока, нагрузки исполнителей и последние назначения. |
 | `src/mocks/utils.ts` | Имитирует сетевую задержку и поддерживает отмену запроса. |
+| `src/mocks/executors.ts` | Исполнители с разной активностью, нагрузкой и лимитами. |
+| `src/mocks/rules.ts` | Демонстрационные hard rules для экрана правил. |
 
 ## Общие модули
 
@@ -71,12 +78,14 @@
 |---|---|
 | `src/shared/config/env.ts` | Валидирует и экспортирует runtime-настройки приложения. |
 | `src/shared/config/queryKeys.ts` | Централизованные ключи TanStack Query. |
+| `src/shared/hooks/useDashboardRealtime.ts` | Подключает SSE и инвалидирует Dashboard при новых событиях. |
 | `src/shared/format/index.ts` | Единое форматирование дат, длительности, чисел, денег и процентов. |
 | `src/shared/components/AppLayout.tsx` | Адаптивная оболочка страницы с навигацией и заголовком. |
 | `src/shared/components/StatusBadge.tsx` | Унифицированное текстовое и цветовое отображение статусов. |
 | `src/shared/components/StateViews.tsx` | Loading, Error и Empty состояния. |
 | `src/shared/components/DataFreshness.tsx` | Время обновления и индикатор фонового запроса. |
 | `src/shared/components/MetricTooltip.tsx` | Доступная подсказка к неоднозначным метрикам. |
+| `src/shared/components/PageErrorBoundary.tsx` | Изолирует ошибку страницы, сохраняя рабочим общий Layout. |
 
 ## Dashboard
 
@@ -106,6 +115,22 @@
 
 | Файл | Назначение |
 |---|---|
-| `src/features/placeholders/PlaceholderPage.tsx` | Честно обозначает маршруты соседнего frontend-контура. |
 | `src/features/not-found/NotFoundPage.tsx` | Обрабатывает неизвестный маршрут. |
 | `src/styles.css` | Общая визуальная система, layout, таблицы, графики и адаптивность. |
+
+## Исполнители и правила
+
+| Файл | Назначение |
+|---|---|
+| `src/features/executors/hooks/useExecutors.ts` | Запрашивает исполнителей, меняет активность и инвалидирует Dashboard. |
+| `src/features/executors/pages/ExecutorsPage.tsx` | Показывает исполнителей, нагрузку, лимиты и действия. |
+| `src/features/rules/hooks/useRules.ts` | Запрашивает правила, переключает их и запускает Test Rule. |
+| `src/features/rules/pages/RulesPage.tsx` | Экран правил и проверка выбранной заявки. |
+
+## Тесты
+
+| Файл | Назначение |
+|---|---|
+| `src/test/setup.ts` | Подключает DOM-матчеры Testing Library. |
+| `src/api/dataFlows.test.ts` | Проверяет фильтрацию, mock-сценарии и единый Assignment-контракт. |
+| `src/shared/components/StatusBadge.test.tsx` | Проверяет текстовую доступность статуса. |

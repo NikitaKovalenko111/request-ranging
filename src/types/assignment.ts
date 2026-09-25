@@ -1,4 +1,5 @@
 import type { AssignmentStatus } from './order';
+import type { DecisionTrace } from './decisionTrace';
 
 export interface Assignment {
   orderId: number;
@@ -12,3 +13,7 @@ export interface Assignment {
   explanation: string | null;
 }
 
+export interface AssignmentDetails {
+  assignment: Assignment | null;
+  decisionTrace: DecisionTrace | null;
+}

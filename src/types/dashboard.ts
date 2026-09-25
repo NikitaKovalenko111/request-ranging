@@ -1,5 +1,13 @@
 import type { Assignment } from './assignment';
 
+export interface DashboardFilters {
+  from?: string;
+  to?: string;
+  bucket: 'minute' | 'hour' | 'day';
+}
+
+export type MockScenario = 'normal' | 'high-throughput' | 'empty' | 'error';
+
 export interface DashboardSummary {
   periodFrom: string;
   periodTo: string;
@@ -50,4 +58,3 @@ export interface DashboardData {
   fairness: FairnessMetric;
   latestAssignments: Assignment[];
 }
-

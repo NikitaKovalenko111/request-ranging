@@ -81,3 +81,21 @@
 - [x] Проверить документацию назначения файлов и актуализировать её по итоговой структуре.
 - [x] Убедиться, что документация не исключена из Git.
 
+## Этап 9 Расширение после ревизии ТЗ
+
+- [x] Привести `GET /assignments/{orderId}` к единому контракту `assignment + decisionTrace`.
+- [x] Добавить Dashboard-фильтры `from`, `to` и `bucket`.
+- [x] Добавить переключатель mock-сценариев: normal, high throughput, empty и error.
+- [x] Добавить экспорт XLSX с листами Summary, Assignments и Executor Load.
+- [x] Добавить Orders-фильтры по периоду и исполнителю.
+- [x] Добавить сортировку, пагинацию и синхронизацию фильтров Orders с URL.
+- [x] Добавить `getOrderOptions` для Test Rule.
+- [x] Заменить заглушку Executors рабочим экраном и изменением активности.
+- [x] Заменить заглушку Rules рабочим экраном, переключением правил и Test Rule.
+- [x] Инвалидировать Dashboard после изменения Rules и Executors.
+- [x] Добавить page-level Error Boundary.
+- [x] Добавить Vitest и React Testing Library.
+- [x] Добавить опциональное SSE-обновление Dashboard через `VITE_REALTIME_MODE=sse`.
+- [x] Исправить обрезание KPI-tooltip на Dashboard.
+- [x] Развести цвета заявок и назначений на timeline.
+- [x] Проверить интерфейс в браузере и отсутствие ошибок console.

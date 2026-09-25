@@ -23,11 +23,24 @@ export interface Order {
 }
 
 export interface OrderFilters {
-  id: string;
+  search: string;
   status: OrderStatus | '';
   assignmentStatus: AssignmentStatus | '';
   orderType: string;
   vip: '' | 'true' | 'false';
-  parentOnly: boolean;
+  hasParent: boolean;
+  executorId: string;
+  from: string;
+  to: string;
+  limit: number;
+  offset: number;
+  sort: 'createdAt' | 'id' | 'processingTimeMs';
+  order: 'asc' | 'desc';
 }
 
+export interface OrderOption {
+  id: number;
+  label: string;
+  status: OrderStatus;
+  vip: boolean;
+}

@@ -14,6 +14,7 @@ npm run dev
 ```bash
 npm run typecheck
 npm run build
+npm test
 ```
 
 ## Источник данных
@@ -25,6 +26,9 @@ npm run build
 - `/dashboard` — метрики, графики нагрузки и последние назначения;
 - `/orders` — список и фильтры заявок;
 - `/orders/:id` — заявка, назначение и Decision Trace;
-- `/executors` и `/rules` — точки интеграции соседнего frontend-контура.
+- `/executors` — нагрузка, лимиты и управление активностью исполнителей;
+- `/rules` — список правил, включение/выключение и Test Rule.
+
+Dashboard поддерживает период, группировку, mock-сценарии и экспорт CSV/XLSX. Фильтры Orders синхронизируются с URL, поэтому отфильтрованное представление можно сохранить ссылкой.
 
 Подробный план находится в `Docs/IMPLEMENTATION_PLAN.md`, назначение файлов — в `Docs/PROJECT_FILES.md`.

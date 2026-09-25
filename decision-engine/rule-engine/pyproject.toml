@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "executor-rule-engine"
+version = "0.1.0"
+description = "Kafka/Redis rule-engine for filtering eligible executors"
+requires-python = ">=3.12"
+dependencies = [
+    "aiokafka>=0.10,<1",
+    "redis>=5,<7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10"]
+
+[project.scripts]
+executor-rule-engine = "executor_rule_engine.main:run"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
+

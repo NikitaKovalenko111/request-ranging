@@ -1,0 +1,122 @@
+{
+  "rules": [
+    {
+      "id": "accepted_amount",
+      "name": "Допустимый диапазон суммы",
+      "description": "Не заданная граница не ограничивает сумму",
+      "enabled": true,
+      "priority": 20,
+      "version": 1,
+      "condition": {
+        "logic": "AND",
+        "conditions": [
+          {
+            "logic": "OR",
+            "conditions": [
+              {"code": "MIN_SUM_NOT_SET", "left": {"source": "executor", "field": "min_accept_sum"}, "operator": "IS_NULL"},
+              {"code": "MIN_SUM", "left": {"source": "order", "field": "sum"}, "operator": "GTE", "right": {"source": "executor", "field": "min_accept_sum"}}
+            ]
+          },
+          {
+            "logic": "OR",
+            "conditions": [
+              {"code": "MAX_SUM_NOT_SET", "left": {"source": "executor", "field": "max_accept_sum"}, "operator": "IS_NULL"},
+              {"code": "MAX_SUM", "left": {"source": "order", "field": "sum"}, "operator": "LTE", "right": {"source": "executor", "field": "max_accept_sum"}}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "rejected_amount",
+      "name": "Исключённый диапазон суммы",
+      "description": "Сумма должна находиться вне включительного reject-диапазона",
+      "enabled": true,
+      "priority": 21,
+      "version": 1,
+      "condition": {
+        "logic": "OR",
+        "conditions": [
+          {"code": "BELOW_REJECT_RANGE", "left": {"source": "order", "field": "sum"}, "operator": "LT", "right": {"source": "executor", "field": "min_reject_sum"}},
+          {"code": "ABOVE_REJECT_RANGE", "left": {"source": "order", "field": "sum"}, "operator": "GT", "right": {"source": "executor", "field": "max_reject_sum"}},
+          {
+            "logic": "AND",
+            "conditions": [
+              {"code": "MIN_REJECT_NOT_SET", "left": {"source": "executor", "field": "min_reject_sum"}, "operator": "IS_NULL"},
+              {"code": "MAX_REJECT_NOT_SET", "left": {"source": "executor", "field": "max_reject_sum"}, "operator": "IS_NULL"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "order_type",
+      "name": "Тип заявки",
+      "enabled": true,
+      "priority": 30,
+      "version": 1,
+      "condition": {
+        "code": "ORDER_TYPE",
+        "left": {"source": "order", "field": "order_type"},
+        "operator": "EQ",
+        "right": {"source": "executor", "field": "order_type"}
+      }
+    },
+    {
+      "id": "subject",
+      "name": "Тематика заявки",
+      "enabled": true,
+      "priority": 31,
+      "version": 1,
+      "condition": {
+        "logic": "OR",
+        "conditions": [
+          {"code": "SUBJECT_NOT_SET", "left": {"source": "executor", "field": "subject"}, "operator": "IS_NULL"},
+          {"code": "SUBJECT", "left": {"source": "order", "field": "subject"}, "operator": "EQ", "right": {"source": "executor", "field": "subject"}}
+        ]
+      }
+    },
+    {
+      "id": "client_msp",
+      "name": "МСП клиента",
+      "enabled": true,
+      "priority": 32,
+      "version": 1,
+      "condition": {
+        "logic": "OR",
+        "conditions": [
+          {"code": "CLIENT_MSP_NOT_SET", "left": {"source": "executor", "field": "client_msp"}, "operator": "IS_NULL"},
+          {"code": "CLIENT_MSP", "left": {"source": "order", "field": "client_msp"}, "operator": "EQ", "right": {"source": "executor", "field": "client_msp"}}
+        ]
+      }
+    },
+    {
+      "id": "executor_msp",
+      "name": "МСП исполнителя",
+      "enabled": true,
+      "priority": 33,
+      "version": 1,
+      "condition": {
+        "logic": "OR",
+        "conditions": [
+          {"code": "EXECUTOR_MSP_NOT_SET", "left": {"source": "executor", "field": "executor_msp"}, "operator": "IS_NULL"},
+          {"code": "EXECUTOR_MSP", "left": {"source": "order", "field": "executor_msp"}, "operator": "EQ", "right": {"source": "executor", "field": "executor_msp"}}
+        ]
+      }
+    },
+    {
+      "id": "vip",
+      "name": "VIP-допуск",
+      "enabled": true,
+      "priority": 40,
+      "version": 1,
+      "condition": {
+        "logic": "OR",
+        "conditions": [
+          {"code": "REGULAR_ORDER", "left": {"source": "order", "field": "vip"}, "operator": "EQ", "right": {"source": "constant", "value": false}},
+          {"code": "VIP_ALLOWED", "left": {"source": "executor", "field": "vip_allowed"}, "operator": "EQ", "right": {"source": "constant", "value": true}}
+        ]
+      }
+    }
+  ]
+}

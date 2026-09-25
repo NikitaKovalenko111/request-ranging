@@ -1,0 +1,7 @@
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import type { ExecutorLoadMetric } from '../../../types/dashboard';
+
+export function ExecutorLoadChart({ data }: { data: ExecutorLoadMetric[] }) {
+  return <section className="panel chart-panel"><div className="panel-heading"><div><span className="section-kicker">Текущая очередь</span><h2>Нагрузка исполнителей</h2></div><div className="legend"><span className="legend-confirmed">Confirmed</span><span className="legend-pending">Pending</span></div></div><div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><BarChart data={data} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}><CartesianGrid stroke="#1b3046" vertical={false} /><XAxis dataKey="executorName" stroke="#8294a8" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} /><YAxis stroke="#8294a8" tickLine={false} axisLine={false} /><Tooltip cursor={{ fill: '#132238' }} contentStyle={{ background: '#0b1828', border: '1px solid #29425e', borderRadius: 10 }} formatter={(value, name, props) => [`${value} · capacity ${props.payload.capacityWeight} · effective ${props.payload.effectiveLoad}`, name]} /><Bar dataKey="confirmedWeight" name="Confirmed" stackId="load" fill="#3b82f6" radius={[0, 0, 4, 4]} isAnimationActive={false} /><Bar dataKey="pendingWeight" name="Pending" stackId="load" fill="#f59e0b" radius={[4, 4, 0, 0]} isAnimationActive={false} /></BarChart></ResponsiveContainer></div></section>;
+}
+

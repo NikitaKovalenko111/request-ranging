@@ -1,0 +1,206 @@
+{
+  "executors_count": 3,
+  "results": [
+    {
+      "executor_id": "executor_002",
+      "executor_name": "Мария",
+      "score": 0.3015,
+      "matched_keywords": [
+        {
+          "keyword": "изменять подпись кнопки",
+          "matched_skill": "Frontend",
+          "similarity": 0.2507,
+          "weight": 0.6772
+        },
+        {
+          "keyword": "кнопке пользовательском интерфейсе",
+          "matched_skill": "Frontend",
+          "similarity": 0.4205,
+          "weight": 0.6655
+        },
+        {
+          "keyword": "текстом отправить заявку",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.3404,
+          "weight": 0.5508
+        },
+        {
+          "keyword": "кнопки включая цвет",
+          "matched_skill": "Frontend",
+          "similarity": 0.2996,
+          "weight": 0.5504
+        },
+        {
+          "keyword": "отображается пользователям если",
+          "matched_skill": "Frontend",
+          "similarity": 0.3096,
+          "weight": 0.4872
+        },
+        {
+          "keyword": "внутренний веб интерфейс",
+          "matched_skill": "Frontend",
+          "similarity": 0.3675,
+          "weight": 0.4827
+        },
+        {
+          "keyword": "изменения архитектуры приложения",
+          "matched_skill": "Python",
+          "similarity": 0.2217,
+          "weight": 0.4494
+        },
+        {
+          "keyword": "заявку администратор сможет",
+          "matched_skill": "Frontend",
+          "similarity": 0.1798,
+          "weight": 0.4101
+        },
+        {
+          "keyword": "тестовая заявка небольшая",
+          "matched_skill": "Python",
+          "similarity": 0.3558,
+          "weight": 0.3781
+        },
+        {
+          "keyword": "технические требования добавить",
+          "matched_skill": "Frontend",
+          "similarity": 0.2037,
+          "weight": 0.3645
+        }
+      ]
+    },
+    {
+      "executor_id": "executor_001",
+      "executor_name": "Иван",
+      "score": 0.283,
+      "matched_keywords": [
+        {
+          "keyword": "изменять подпись кнопки",
+          "matched_skill": "Go",
+          "similarity": 0.2065,
+          "weight": 0.6772
+        },
+        {
+          "keyword": "кнопке пользовательском интерфейсе",
+          "matched_skill": "REST API",
+          "similarity": 0.3358,
+          "weight": 0.6655
+        },
+        {
+          "keyword": "текстом отправить заявку",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.3404,
+          "weight": 0.5508
+        },
+        {
+          "keyword": "кнопки включая цвет",
+          "matched_skill": "Docker",
+          "similarity": 0.145,
+          "weight": 0.5504
+        },
+        {
+          "keyword": "отображается пользователям если",
+          "matched_skill": "REST API",
+          "similarity": 0.3598,
+          "weight": 0.4872
+        },
+        {
+          "keyword": "внутренний веб интерфейс",
+          "matched_skill": "REST API",
+          "similarity": 0.361,
+          "weight": 0.4827
+        },
+        {
+          "keyword": "изменения архитектуры приложения",
+          "matched_skill": "REST API",
+          "similarity": 0.2994,
+          "weight": 0.4494
+        },
+        {
+          "keyword": "заявку администратор сможет",
+          "matched_skill": "Docker",
+          "similarity": 0.2346,
+          "weight": 0.4101
+        },
+        {
+          "keyword": "тестовая заявка небольшая",
+          "matched_skill": "REST API",
+          "similarity": 0.2391,
+          "weight": 0.3781
+        },
+        {
+          "keyword": "технические требования добавить",
+          "matched_skill": "REST API",
+          "similarity": 0.3241,
+          "weight": 0.3645
+        }
+      ]
+    },
+    {
+      "executor_id": "executor_003",
+      "executor_name": "Алексей",
+      "score": 0.2531,
+      "matched_keywords": [
+        {
+          "keyword": "изменять подпись кнопки",
+          "matched_skill": "Docker",
+          "similarity": 0.2038,
+          "weight": 0.6772
+        },
+        {
+          "keyword": "кнопке пользовательском интерфейсе",
+          "matched_skill": "Docker",
+          "similarity": 0.2897,
+          "weight": 0.6655
+        },
+        {
+          "keyword": "текстом отправить заявку",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.2071,
+          "weight": 0.5508
+        },
+        {
+          "keyword": "кнопки включая цвет",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.182,
+          "weight": 0.5504
+        },
+        {
+          "keyword": "отображается пользователям если",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3448,
+          "weight": 0.4872
+        },
+        {
+          "keyword": "внутренний веб интерфейс",
+          "matched_skill": "Java",
+          "similarity": 0.27,
+          "weight": 0.4827
+        },
+        {
+          "keyword": "изменения архитектуры приложения",
+          "matched_skill": "Java",
+          "similarity": 0.2595,
+          "weight": 0.4494
+        },
+        {
+          "keyword": "заявку администратор сможет",
+          "matched_skill": "Docker",
+          "similarity": 0.2346,
+          "weight": 0.4101
+        },
+        {
+          "keyword": "тестовая заявка небольшая",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3002,
+          "weight": 0.3781
+        },
+        {
+          "keyword": "технические требования добавить",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.2737,
+          "weight": 0.3645
+        }
+      ]
+    }
+  ]
+}

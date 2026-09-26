@@ -1,0 +1,35 @@
+
+{
+  "executors": [
+    {
+      "id": "executor_001",
+      "name": "Иван",
+      "skills": [
+        "Go",
+        "PostgreSQL",
+        "REST API",
+        "Docker"
+      ]
+    },
+    {
+      "id": "executor_002",
+      "name": "Мария",
+      "skills": [
+        "Python",
+        "PostgreSQL",
+        "Machine Learning",
+        "Frontend"
+      ]
+    },
+    {
+      "id": "executor_003",
+      "name": "Алексей",
+      "skills": [
+        "Java",
+        "Spring Boot",
+        "Docker",
+        "Kubernetes"
+      ]
+    }
+  ]
+}

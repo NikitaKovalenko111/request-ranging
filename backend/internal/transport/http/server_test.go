@@ -8,20 +8,20 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"request-ranging/executor-balancer/internal/application"
-	"request-ranging/executor-balancer/internal/transport/http/handlers"
+	systemservice "request-ranging/executor-balancer/internal/services/system"
+	systemhandler "request-ranging/executor-balancer/internal/transport/http/handlers/system"
 )
 
 type fakeReadiness struct {
-	result application.Readiness
+	result systemservice.Readiness
 }
 
-func (f fakeReadiness) Readiness(context.Context) application.Readiness { return f.result }
+func (f fakeReadiness) Readiness(context.Context) systemservice.Readiness { return f.result }
 
 func TestServerRegistersSystemRoutes(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	systemHandler := handlers.NewSystemHandler(fakeReadiness{
-		result: application.Readiness{Status: "ready", Checks: map[string]application.DependencyStatus{}},
+	systemHandler := systemhandler.New(fakeReadiness{
+		result: systemservice.Readiness{Status: "ready", Checks: map[string]systemservice.DependencyStatus{}},
 	})
 	server := NewServer(logger, systemHandler)
 

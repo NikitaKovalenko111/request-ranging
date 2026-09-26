@@ -10,13 +10,13 @@ import (
 	"os/signal"
 	"syscall"
 
-	"request-ranging/executor-balancer/internal/application"
 	"request-ranging/executor-balancer/internal/config"
 	"request-ranging/executor-balancer/internal/package/logger"
 	"request-ranging/executor-balancer/internal/repository/postgres"
 	redisstorage "request-ranging/executor-balancer/internal/repository/redis"
+	systemservice "request-ranging/executor-balancer/internal/services/system"
 	httptransport "request-ranging/executor-balancer/internal/transport/http"
-	"request-ranging/executor-balancer/internal/transport/http/handlers"
+	systemhandler "request-ranging/executor-balancer/internal/transport/http/handlers/system"
 	kafkatransport "request-ranging/executor-balancer/internal/transport/kafka"
 )
 
@@ -51,14 +51,14 @@ func run() error {
 	}
 	defer kafkaClient.Close()
 
-	checkers := []application.DependencyChecker{
+	checkers := []systemservice.DependencyChecker{
 		postgresClient,
 		redisClient,
 		kafkaClient,
 	}
 
-	healthService := application.NewHealthService(cfg.App.DependencyCheckTimeout, checkers...)
-	systemHandler := handlers.NewSystemHandler(healthService)
+	healthService := systemservice.NewHealthService(cfg.App.DependencyCheckTimeout, checkers...)
+	systemHandler := systemhandler.New(healthService)
 	transportServer := httptransport.NewServer(appLogger, systemHandler)
 	server := &http.Server{
 		Addr:              cfg.HTTP.Address,

@@ -1,4 +1,4 @@
-package handlers
+package system
 
 import (
 	"context"
@@ -7,21 +7,18 @@ import (
 	"strings"
 	"testing"
 
-	"request-ranging/executor-balancer/internal/application"
+	systemservice "request-ranging/executor-balancer/internal/services/system"
 )
 
-type fakeReadiness struct {
-	result application.Readiness
-}
+type fakeReadiness struct{ result systemservice.Readiness }
 
-func (f fakeReadiness) Readiness(context.Context) application.Readiness { return f.result }
+func (f fakeReadiness) Readiness(context.Context) systemservice.Readiness { return f.result }
 
 func TestHealth(t *testing.T) {
-	handler := NewSystemHandler(fakeReadiness{})
+	handler := New(fakeReadiness{})
 	request := httptest.NewRequest(stdhttp.MethodGet, "/health", nil)
 	response := httptest.NewRecorder()
 	handler.Health(response, request)
-
 	if response.Code != stdhttp.StatusOK {
 		t.Fatalf("status = %d, want 200", response.Code)
 	}
@@ -31,11 +28,10 @@ func TestHealth(t *testing.T) {
 }
 
 func TestReadyReturnsServiceUnavailable(t *testing.T) {
-	handler := NewSystemHandler(fakeReadiness{result: application.Readiness{Status: "not_ready"}})
+	handler := New(fakeReadiness{result: systemservice.Readiness{Status: "not_ready"}})
 	request := httptest.NewRequest(stdhttp.MethodGet, "/ready", nil)
 	response := httptest.NewRecorder()
 	handler.Ready(response, request)
-
 	if response.Code != stdhttp.StatusServiceUnavailable {
 		t.Fatalf("status = %d, want 503", response.Code)
 	}

@@ -5,11 +5,11 @@ import (
 	stdhttp "net/http"
 	"time"
 
-	"request-ranging/executor-balancer/internal/transport/http/handlers"
+	"request-ranging/executor-balancer/internal/transport/http/handlers/system"
 )
 
 type Handlers struct {
-	System *handlers.SystemHandler
+	System *system.Handler
 }
 
 type Server struct {
@@ -17,7 +17,7 @@ type Server struct {
 	handlers Handlers
 }
 
-func NewServer(logger *slog.Logger, systemHandler *handlers.SystemHandler) *Server {
+func NewServer(logger *slog.Logger, systemHandler *system.Handler) *Server {
 	return &Server{
 		logger: logger,
 		handlers: Handlers{
@@ -28,7 +28,7 @@ func NewServer(logger *slog.Logger, systemHandler *handlers.SystemHandler) *Serv
 
 func (s *Server) Handler() stdhttp.Handler {
 	mux := stdhttp.NewServeMux()
-	handlers.StartSystemHandler(mux, s.handlers.System)
+	system.StartSystemHandler(mux, s.handlers.System)
 	return s.requestLogger(mux)
 }
 

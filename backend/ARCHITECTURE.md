@@ -53,20 +53,37 @@ backend/
 │   │   ├── ais.go
 │   │   └── reservation.go
 │   │
-│   ├── services/
-│   │   ├── order.go
-│   │   ├── executor.go
-│   │   ├── rule.go
-│   │   ├── assignment.go
-│   │   ├── reservation.go
-│   │   └── decision_trace.go
+│   ├── models/
+│   │   ├── order/
+│   │   │   ├── model.go
+│   │   │   └── model_test.go
+│   │   ├── executor/
+│   │   │   └── model.go
+│   │   ├── rule/
+│   │   │   ├── model.go
+│   │   │   └── model_test.go
+│   │   ├── assignment/
+│   │   │   └── model.go
+│   │   ├── reservation/
+│   │   │   └── model.go
+│   │   ├── decisiontrace/
+│   │   │   └── model.go
+│   │   └── event/
+│   │       └── model.go
 │   │
-│   ├── application/
-│   │   ├── distribution_service.go
-│   │   ├── order_service.go
-│   │   ├── executor_service.go
-│   │   ├── rule_service.go
-│   │   └── dashboard_service.go
+│   ├── services/
+│   │   ├── system/
+│   │   │   ├── service.go
+│   │   │   └── service_test.go
+│   │   ├── distribution/
+│   │   │   ├── service.go
+│   │   │   └── service_test.go
+│   │   ├── order/
+│   │   ├── executor/
+│   │   ├── rule/
+│   │   ├── assignment/
+│   │   ├── reservation/
+│   │   └── dashboard/
 │   │
 │   ├── distribution/
 │   │   ├── parent_handler.go
@@ -80,28 +97,51 @@ backend/
 │   │   ├── interfaces.go
 │   │   ├── postgres/
 │   │   │   ├── client.go
-│   │   │   ├── order_repository.go
-│   │   │   ├── executor_repository.go
-│   │   │   ├── rule_repository.go
-│   │   │   ├── assignment_repository.go
-│   │   │   └── event_repository.go
+│   │   │   └── repositories/
+│   │   │       ├── repositories.go
+│   │   │       ├── shared/
+│   │   │       │   └── helpers.go
+│   │   │       ├── order/
+│   │   │       │   ├── queries.go
+│   │   │       │   ├── repository.go
+│   │   │       │   └── repository_test.go
+│   │   │       ├── executor/
+│   │   │       │   ├── queries.go
+│   │   │       │   ├── repository.go
+│   │   │       │   └── repository_test.go
+│   │   │       ├── rule/
+│   │   │       │   ├── queries.go
+│   │   │       │   ├── repository.go
+│   │   │       │   └── repository_test.go
+│   │   │       ├── assignment/
+│   │   │       │   ├── queries.go
+│   │   │       │   ├── repository.go
+│   │   │       │   └── repository_test.go
+│   │   │       ├── decisiontrace/
+│   │   │       │   ├── queries.go
+│   │   │       │   ├── repository.go
+│   │   │       │   └── repository_test.go
+│   │   │       └── event/
+│   │   │           ├── queries.go
+│   │   │           ├── repository.go
+│   │   │           └── repository_test.go
 │   │   └── redis/
 │   │       ├── client.go
 │   │       └── scripts.go
-│   │
-│   ├── reservation/
-│   │   └── service.go
 │   │
 │   ├── transport/
 │   │   ├── http/
 │   │   │   ├── server.go
 │   │   │   └── handlers/
-│   │   │       ├── system_handler.go
-│   │   │       ├── order_handler.go
-│   │   │       ├── executor_handler.go
-│   │   │       ├── rule_handler.go
-│   │   │       ├── assignment_handler.go
-│   │   │       └── dashboard_handler.go
+│   │   │       ├── system/
+│   │   │       │   ├── handler.go
+│   │   │       │   ├── routes.go
+│   │   │       │   └── handler_test.go
+│   │   │       ├── order/
+│   │   │       ├── executor/
+│   │   │       ├── rule/
+│   │   │       ├── assignment/
+│   │   │       └── dashboard/
 │   │   └── kafka/
 │   │       ├── client.go
 │   │       ├── consumer.go
@@ -141,13 +181,13 @@ backend/
 
 ## 3. Ответственность каталогов
 
+### `internal/models`
+
+Основные структуры данных сервиса: заявка, исполнитель, правило, назначение, резервирование и история принятия решения. Каждая предметная область находится в собственной папке; рядом с моделью размещаются её тесты. Код в этом каталоге не должен обращаться к HTTP, Kafka, PostgreSQL или Redis.
+
 ### `internal/services`
 
-Основные структуры данных сервиса: заявка, исполнитель, правило, назначение, резервирование и история принятия решения. Код в этом каталоге не должен обращаться к HTTP, Kafka, PostgreSQL или Redis.
-
-### `internal/application`
-
-Управление полными сценариями. Главный сценарий находится в `distribution_service.go` и последовательно вызывает получение данных, правила, балансировку, резервирование и отправку назначения.
+Сервисный слой между `transport` и `repository`. Сервисы проверяют бизнес-условия, управляют сценариями и вызывают интерфейсы репозиториев. Сложный сценарий распределения находится в `services/distribution` и последовательно вызывает получение данных, правила, балансировку, резервирование и отправку назначения.
 
 ### `internal/distribution`
 
@@ -161,7 +201,7 @@ backend/
 
 ### `internal/repository`
 
-Интерфейсы доступа к данным и их реализация для PostgreSQL. Остальные части приложения не выполняют SQL запросы напрямую.
+Интерфейсы доступа к данным и их реализация для PostgreSQL. Каждый PostgreSQL-репозиторий находится в отдельной папке: `queries.go` содержит SQL, `repository.go` — Go-код доступа к данным, `repository_test.go` — тесты. При необходимости рядом можно добавить `dto.go`. Остальные части приложения не выполняют SQL запросы напрямую.
 
 ### `internal/reservation`
 
@@ -169,9 +209,9 @@ backend/
 
 ### `internal/transport`
 
-Входные точки приложения: HTTP API и Kafka consumer. Обработчики проверяют входные данные и вызывают application services, но не содержат бизнес-логику распределения.
+Входные точки приложения: HTTP API и Kafka consumer. Обработчики проверяют входные данные и вызывают сервисы из `internal/services`, но не содержат бизнес-логику распределения.
 
-`server.go` создаёт HTTP router и хранит структуру обработчиков. Каждый файл в `transport/http/handlers` самостоятельно регистрирует свои маршруты функцией вида `StartSystemHandler`, `StartOrderHandler` или `StartRuleHandler`.
+`server.go` создаёт HTTP router и хранит структуру обработчиков. Для каждой группы HTTP-методов создаётся отдельная папка в `transport/http/handlers`: `handler.go` содержит обработчик, `routes.go` регистрирует маршруты функцией вида `StartSystemHandler`, а `handler_test.go` содержит тесты.
 
 ### `internal/package`
 

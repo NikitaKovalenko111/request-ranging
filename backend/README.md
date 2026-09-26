@@ -15,6 +15,15 @@
 docker compose up -d
 ```
 
+При первом создании PostgreSQL volume файл `migrations/001_initial.up.sql` применяется автоматически. Если volume уже существовал до добавления миграции, примените её вручную из PowerShell:
+
+```text
+Get-Content -Raw .\migrations\001_initial.up.sql |
+    docker compose exec -T postgres psql -U executor_balancer -d executor_balancer
+```
+
+Миграция создаёт таблицы заявок, исполнителей, правил, назначений, истории решений и обработанных Kafka событий.
+
 ## Локальный запуск приложения
 
 После запуска инфраструктуры:

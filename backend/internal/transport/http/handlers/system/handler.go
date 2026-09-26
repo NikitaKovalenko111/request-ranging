@@ -1,38 +1,33 @@
-package handlers
+package system
 
 import (
 	"context"
 	"encoding/json"
 	stdhttp "net/http"
 
-	"request-ranging/executor-balancer/internal/application"
+	systemservice "request-ranging/executor-balancer/internal/services/system"
 )
 
 type ReadinessProvider interface {
-	Readiness(ctx context.Context) application.Readiness
+	Readiness(ctx context.Context) systemservice.Readiness
 }
 
-type SystemHandler struct {
+type Handler struct {
 	readiness ReadinessProvider
 }
 
-func NewSystemHandler(readiness ReadinessProvider) *SystemHandler {
-	return &SystemHandler{readiness: readiness}
+func New(readiness ReadinessProvider) *Handler {
+	return &Handler{readiness: readiness}
 }
 
-func StartSystemHandler(mux *stdhttp.ServeMux, handler *SystemHandler) {
-	mux.HandleFunc("GET /health", handler.Health)
-	mux.HandleFunc("GET /ready", handler.Ready)
-}
-
-func (h *SystemHandler) Health(response stdhttp.ResponseWriter, _ *stdhttp.Request) {
+func (h *Handler) Health(response stdhttp.ResponseWriter, _ *stdhttp.Request) {
 	writeJSON(response, stdhttp.StatusOK, map[string]string{
 		"status":  "up",
 		"service": "executor-balancer",
 	})
 }
 
-func (h *SystemHandler) Ready(response stdhttp.ResponseWriter, request *stdhttp.Request) {
+func (h *Handler) Ready(response stdhttp.ResponseWriter, request *stdhttp.Request) {
 	result := h.readiness.Readiness(request.Context())
 	statusCode := stdhttp.StatusOK
 	if result.Status != "ready" {

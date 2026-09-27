@@ -2,203 +2,1466 @@
   "executors_count": 3,
   "results": [
     {
-      "executor_id": "executor_002",
-      "executor_name": "Мария",
-      "score": 0.3015,
+      "executor_id": "executor_001",
+      "executor_name": "Иван",
+      "score": 0.3201,
+      "matched_skills_count": 4,
       "matched_keywords": [
         {
-          "keyword": "изменять подпись кнопки",
-          "matched_skill": "Frontend",
-          "similarity": 0.2507,
-          "weight": 0.6772
+          "keyword": "роли администратор управляет",
+          "matched_skill": "Docker",
+          "similarity": 0.2787,
+          "weight": 0.7479
         },
         {
-          "keyword": "кнопке пользовательском интерфейсе",
-          "matched_skill": "Frontend",
-          "similarity": 0.4205,
-          "weight": 0.6655
+          "keyword": "автоматическое распределение заказов",
+          "matched_skill": "Docker",
+          "similarity": 0.2994,
+          "weight": 0.7357
         },
         {
-          "keyword": "текстом отправить заявку",
+          "keyword": "000 заказов сутки",
+          "matched_skill": "Docker",
+          "similarity": 0.2167,
+          "weight": 0.7186
+        },
+        {
+          "keyword": "интерфейс диспетчера должен",
+          "matched_skill": "REST API",
+          "similarity": 0.3092,
+          "weight": 0.7072
+        },
+        {
+          "keyword": "диспетчер контролирует",
+          "matched_skill": "Docker",
+          "similarity": 0.4581,
+          "weight": 0.7062
+        },
+        {
+          "keyword": "доставки менеджер анализирует",
+          "matched_skill": "Docker",
+          "similarity": 0.3206,
+          "weight": 0.7049
+        },
+        {
+          "keyword": "создание веб платформы",
+          "matched_skill": "REST API",
+          "similarity": 0.2947,
+          "weight": 0.6931
+        },
+        {
+          "keyword": "показателями количество заказов",
+          "matched_skill": "Docker",
+          "similarity": 0.3275,
+          "weight": 0.6922
+        },
+        {
+          "keyword": "платформы для управления",
+          "matched_skill": "Docker",
+          "similarity": 0.3918,
+          "weight": 0.6712
+        },
+        {
+          "keyword": "разработчиков двух frontend",
+          "matched_skill": "REST API",
+          "similarity": 0.2885,
+          "weight": 0.6574
+        },
+        {
+          "keyword": "заказов система должна",
+          "matched_skill": "Docker",
+          "similarity": 0.3156,
+          "weight": 0.6465
+        },
+        {
+          "keyword": "содержать интерактивную карту",
+          "matched_skill": "REST API",
+          "similarity": 0.3085,
+          "weight": 0.6464
+        },
+        {
+          "keyword": "клиентов необходимо создать",
+          "matched_skill": "REST API",
+          "similarity": 0.2731,
+          "weight": 0.6454
+        },
+        {
+          "keyword": "диспетчеров до 000",
+          "matched_skill": "Docker",
+          "similarity": 0.2991,
+          "weight": 0.6407
+        },
+        {
+          "keyword": "интернет магазинов планирует",
+          "matched_skill": "REST API",
+          "similarity": 0.1639,
+          "weight": 0.631
+        },
+        {
+          "keyword": "увеличение количества заказов",
+          "matched_skill": "Docker",
+          "similarity": 0.2399,
+          "weight": 0.6201
+        },
+        {
+          "keyword": "управляет пользователями настройками",
+          "matched_skill": "REST API",
+          "similarity": 0.4049,
+          "weight": 0.6065
+        },
+        {
+          "keyword": "postgresql поддержкой географических",
           "matched_skill": "PostgreSQL",
-          "similarity": 0.3404,
-          "weight": 0.5508
+          "similarity": 0.6349,
+          "weight": 0.6063
         },
         {
-          "keyword": "кнопки включая цвет",
-          "matched_skill": "Frontend",
-          "similarity": 0.2996,
-          "weight": 0.5504
+          "keyword": "для автоматизации логистических",
+          "matched_skill": "Docker",
+          "similarity": 0.3543,
+          "weight": 0.5967
         },
         {
-          "keyword": "отображается пользователям если",
-          "matched_skill": "Frontend",
-          "similarity": 0.3096,
-          "weight": 0.4872
+          "keyword": "маршрутизации можно использовать",
+          "matched_skill": "REST API",
+          "similarity": 0.3258,
+          "weight": 0.5911
         },
         {
-          "keyword": "внутренний веб интерфейс",
-          "matched_skill": "Frontend",
-          "similarity": 0.3675,
-          "weight": 0.4827
+          "keyword": "должен содержать интерактивную",
+          "matched_skill": "REST API",
+          "similarity": 0.3359,
+          "weight": 0.5867
         },
         {
-          "keyword": "изменения архитектуры приложения",
-          "matched_skill": "Python",
-          "similarity": 0.2217,
-          "weight": 0.4494
+          "keyword": "курьеров клиентскую страницу",
+          "matched_skill": "Docker",
+          "similarity": 0.324,
+          "weight": 0.5795
         },
         {
-          "keyword": "заявку администратор сможет",
-          "matched_skill": "Frontend",
-          "similarity": 0.1798,
-          "weight": 0.4101
+          "keyword": "тарифами диспетчер контролирует",
+          "matched_skill": "Docker",
+          "similarity": 0.26,
+          "weight": 0.5726
         },
         {
-          "keyword": "тестовая заявка небольшая",
-          "matched_skill": "Python",
-          "similarity": 0.3558,
-          "weight": 0.3781
+          "keyword": "идентификатор данные отправителя",
+          "matched_skill": "REST API",
+          "similarity": 0.3309,
+          "weight": 0.5682
         },
         {
-          "keyword": "технические требования добавить",
-          "matched_skill": "Frontend",
-          "similarity": 0.2037,
-          "weight": 0.3645
+          "keyword": "менеджеры распределяют заказы",
+          "matched_skill": "Docker",
+          "similarity": 0.2918,
+          "weight": 0.5655
+        },
+        {
+          "keyword": "аналитики показателями количество",
+          "matched_skill": "Docker",
+          "similarity": 0.2447,
+          "weight": 0.5539
+        },
+        {
+          "keyword": "разработать панель аналитики",
+          "matched_skill": "Docker",
+          "similarity": 0.2902,
+          "weight": 0.5538
+        },
+        {
+          "keyword": "очереди отчёты должны",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.3265,
+          "weight": 0.5476
+        },
+        {
+          "keyword": "до 50 диспетчеров",
+          "matched_skill": "Docker",
+          "similarity": 0.3487,
+          "weight": 0.5425
+        },
+        {
+          "keyword": "должна поддерживать websocket",
+          "matched_skill": "REST API",
+          "similarity": 0.3934,
+          "weight": 0.5357
+        },
+        {
+          "keyword": "специалиста по алгоритмам",
+          "matched_skill": "Docker",
+          "similarity": 0.3616,
+          "weight": 0.5131
+        },
+        {
+          "keyword": "возможность вручную переназначить",
+          "matched_skill": "Docker",
+          "similarity": 0.3288,
+          "weight": 0.5089
+        },
+        {
+          "keyword": "отслеживание доставки расширенная",
+          "matched_skill": "REST API",
+          "similarity": 0.3403,
+          "weight": 0.5071
+        },
+        {
+          "keyword": "временных данных допускается",
+          "matched_skill": "REST API",
+          "similarity": 0.403,
+          "weight": 0.5019
+        },
+        {
+          "keyword": "карту курьерами заказами",
+          "matched_skill": "Docker",
+          "similarity": 0.3671,
+          "weight": 0.501
+        },
+        {
+          "keyword": "данных допускается redis",
+          "matched_skill": "REST API",
+          "similarity": 0.3183,
+          "weight": 0.4891
+        },
+        {
+          "keyword": "одного тестировщика бюджет",
+          "matched_skill": "Docker",
+          "similarity": 0.2938,
+          "weight": 0.484
+        },
+        {
+          "keyword": "маршрутами доставки наша",
+          "matched_skill": "Go",
+          "similarity": 0.3885,
+          "weight": 0.4826
+        },
+        {
+          "keyword": "маршруты таблицах отслеживают",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.2702,
+          "weight": 0.4786
+        },
+        {
+          "keyword": "кэширования текущих координат",
+          "matched_skill": "Docker",
+          "similarity": 0.2678,
+          "weight": 0.4676
+        },
+        {
+          "keyword": "одновременных пользователей клиентского",
+          "matched_skill": "REST API",
+          "similarity": 0.4765,
+          "weight": 0.465
+        },
+        {
+          "keyword": "процент доставок выполненных",
+          "matched_skill": "Docker",
+          "similarity": 0.2094,
+          "weight": 0.4616
+        },
+        {
+          "keyword": "разработку mvp отводится",
+          "matched_skill": "REST API",
+          "similarity": 0.3378,
+          "weight": 0.46
+        },
+        {
+          "keyword": "код клиентское",
+          "matched_skill": "REST API",
+          "similarity": 0.4735,
+          "weight": 0.4571
+        },
+        {
+          "keyword": "доставок выполненных вовремя",
+          "matched_skill": "Docker",
+          "similarity": 0.3807,
+          "weight": 0.4562
+        },
+        {
+          "keyword": "хранить уникальный идентификатор",
+          "matched_skill": "REST API",
+          "similarity": 0.4393,
+          "weight": 0.4555
+        },
+        {
+          "keyword": "сложная оптимизация маршрутов",
+          "matched_skill": "Go",
+          "similarity": 0.2481,
+          "weight": 0.449
+        },
+        {
+          "keyword": "войти создание заказов",
+          "matched_skill": "Docker",
+          "similarity": 0.3742,
+          "weight": 0.4485
+        },
+        {
+          "keyword": "проекта 500 000",
+          "matched_skill": "Docker",
+          "similarity": 0.1819,
+          "weight": 0.4462
+        },
+        {
+          "keyword": "postgis для кэширования",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.527,
+          "weight": 0.4429
+        },
+        {
+          "keyword": "таблицу заказов фильтры",
+          "matched_skill": "Docker",
+          "similarity": 0.3482,
+          "weight": 0.4361
+        },
+        {
+          "keyword": "клиентская страница должна",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.3016,
+          "weight": 0.43
+        },
+        {
+          "keyword": "openapi система должна",
+          "matched_skill": "REST API",
+          "similarity": 0.418,
+          "weight": 0.4298
+        },
+        {
+          "keyword": "эффективность работы формирует",
+          "matched_skill": "REST API",
+          "similarity": 0.2839,
+          "weight": 0.4275
+        },
+        {
+          "keyword": "смартфонов удобен",
+          "matched_skill": "REST API",
+          "similarity": 0.2503,
+          "weight": 0.4231
+        },
+        {
+          "keyword": "заказы распределение маршруты",
+          "matched_skill": "Go",
+          "similarity": 0.244,
+          "weight": 0.4089
+        },
+        {
+          "keyword": "несколько городов увеличение",
+          "matched_skill": "Docker",
+          "similarity": 0.0529,
+          "weight": 0.4035
+        },
+        {
+          "keyword": "backend",
+          "matched_skill": "REST API",
+          "similarity": 0.4341,
+          "weight": 0.4
+        },
+        {
+          "keyword": "интернет магазинов для",
+          "matched_skill": "Go",
+          "similarity": 0.2581,
+          "weight": 0.392
+        },
+        {
+          "keyword": "габариты категорию груза",
+          "matched_skill": "Docker",
+          "similarity": 0.3034,
+          "weight": 0.3761
+        },
+        {
+          "keyword": "ожидается до 10",
+          "matched_skill": "Go",
+          "similarity": 0.2872,
+          "weight": 0.374
+        },
+        {
+          "keyword": "телефону самостоятельно обрабатывают",
+          "matched_skill": "REST API",
+          "similarity": 0.1721,
+          "weight": 0.3695
+        },
+        {
+          "keyword": "должны поддерживать выгрузку",
+          "matched_skill": "Go",
+          "similarity": 0.4311,
+          "weight": 0.3621
+        },
+        {
+          "keyword": "неудачных попыток среднее",
+          "matched_skill": "REST API",
+          "similarity": 0.2664,
+          "weight": 0.3588
+        },
+        {
+          "keyword": "необходимо хранить контактные",
+          "matched_skill": "REST API",
+          "similarity": 0.4174,
+          "weight": 0.3539
+        },
+        {
+          "keyword": "пересчитывать маршрут интерфейс",
+          "matched_skill": "REST API",
+          "similarity": 0.3581,
+          "weight": 0.3537
+        },
+        {
+          "keyword": "отслеживания перспективе планируется",
+          "matched_skill": "REST API",
+          "similarity": 0.2765,
+          "weight": 0.348
+        },
+        {
+          "keyword": "планируется расширение",
+          "matched_skill": "Go",
+          "similarity": 0.2688,
+          "weight": 0.3224
+        },
+        {
+          "keyword": "день неделю месяц",
+          "matched_skill": "Go",
+          "similarity": 0.2293,
+          "weight": 0.3219
+        },
+        {
+          "keyword": "основная задача системы",
+          "matched_skill": "Docker",
+          "similarity": 0.3283,
+          "weight": 0.321
+        },
+        {
+          "keyword": "телефон получателя вес",
+          "matched_skill": "REST API",
+          "similarity": 0.2365,
+          "weight": 0.3089
+        },
+        {
+          "keyword": "выгрузку csv excel",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.3702,
+          "weight": 0.3078
+        },
+        {
+          "keyword": "поддержку русского английского",
+          "matched_skill": "Go",
+          "similarity": 0.2318,
+          "weight": 0.295
+        },
+        {
+          "keyword": "одновременно работающих",
+          "matched_skill": "Go",
+          "similarity": 0.4145,
+          "weight": 0.2914
+        },
+        {
+          "keyword": "статусам панель",
+          "matched_skill": "REST API",
+          "similarity": 0.3348,
+          "weight": 0.2731
+        },
+        {
+          "keyword": "отводится 10 недель",
+          "matched_skill": "Go",
+          "similarity": 0.2045,
+          "weight": 0.2635
+        },
+        {
+          "keyword": "велосипеды автомобили мотоциклы",
+          "matched_skill": "Go",
+          "similarity": 0.1245,
+          "weight": 0.232
+        },
+        {
+          "keyword": "typescript для хранения",
+          "matched_skill": "REST API",
+          "similarity": 0.3303,
+          "weight": 0.2311
+        },
+        {
+          "keyword": "рублей первую версию",
+          "matched_skill": "Docker",
+          "similarity": 0.159,
+          "weight": 0.2262
+        },
+        {
+          "keyword": "минималистичной понятной отображением",
+          "matched_skill": "Docker",
+          "similarity": 0.3323,
+          "weight": 0.2247
         }
       ]
     },
     {
-      "executor_id": "executor_001",
-      "executor_name": "Иван",
-      "score": 0.283,
+      "executor_id": "executor_002",
+      "executor_name": "Мария",
+      "score": 0.295,
+      "matched_skills_count": 3,
       "matched_keywords": [
         {
-          "keyword": "изменять подпись кнопки",
-          "matched_skill": "Go",
-          "similarity": 0.2065,
-          "weight": 0.6772
+          "keyword": "роли администратор управляет",
+          "matched_skill": "Frontend",
+          "similarity": 0.2286,
+          "weight": 0.7479
         },
         {
-          "keyword": "кнопке пользовательском интерфейсе",
-          "matched_skill": "REST API",
-          "similarity": 0.3358,
-          "weight": 0.6655
+          "keyword": "автоматическое распределение заказов",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.3949,
+          "weight": 0.7357
         },
         {
-          "keyword": "текстом отправить заявку",
+          "keyword": "000 заказов сутки",
+          "matched_skill": "Frontend",
+          "similarity": 0.1835,
+          "weight": 0.7186
+        },
+        {
+          "keyword": "интерфейс диспетчера должен",
+          "matched_skill": "Frontend",
+          "similarity": 0.3287,
+          "weight": 0.7072
+        },
+        {
+          "keyword": "диспетчер контролирует",
+          "matched_skill": "Frontend",
+          "similarity": 0.3958,
+          "weight": 0.7062
+        },
+        {
+          "keyword": "доставки менеджер анализирует",
+          "matched_skill": "Frontend",
+          "similarity": 0.2881,
+          "weight": 0.7049
+        },
+        {
+          "keyword": "создание веб платформы",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.2245,
+          "weight": 0.6931
+        },
+        {
+          "keyword": "показателями количество заказов",
+          "matched_skill": "Frontend",
+          "similarity": 0.2938,
+          "weight": 0.6922
+        },
+        {
+          "keyword": "платформы для управления",
+          "matched_skill": "Frontend",
+          "similarity": 0.3956,
+          "weight": 0.6712
+        },
+        {
+          "keyword": "разработчиков двух frontend",
+          "matched_skill": "Frontend",
+          "similarity": 0.5255,
+          "weight": 0.6574
+        },
+        {
+          "keyword": "заказов система должна",
+          "matched_skill": "Frontend",
+          "similarity": 0.2394,
+          "weight": 0.6465
+        },
+        {
+          "keyword": "содержать интерактивную карту",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.2633,
+          "weight": 0.6464
+        },
+        {
+          "keyword": "клиентов необходимо создать",
           "matched_skill": "PostgreSQL",
-          "similarity": 0.3404,
-          "weight": 0.5508
+          "similarity": 0.1926,
+          "weight": 0.6454
         },
         {
-          "keyword": "кнопки включая цвет",
-          "matched_skill": "Docker",
-          "similarity": 0.145,
-          "weight": 0.5504
+          "keyword": "диспетчеров до 000",
+          "matched_skill": "Frontend",
+          "similarity": 0.2209,
+          "weight": 0.6407
         },
         {
-          "keyword": "отображается пользователям если",
-          "matched_skill": "REST API",
-          "similarity": 0.3598,
-          "weight": 0.4872
+          "keyword": "интернет магазинов планирует",
+          "matched_skill": "Frontend",
+          "similarity": 0.1858,
+          "weight": 0.631
         },
         {
-          "keyword": "внутренний веб интерфейс",
-          "matched_skill": "REST API",
-          "similarity": 0.361,
-          "weight": 0.4827
+          "keyword": "увеличение количества заказов",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.2133,
+          "weight": 0.6201
         },
         {
-          "keyword": "изменения архитектуры приложения",
-          "matched_skill": "REST API",
-          "similarity": 0.2994,
-          "weight": 0.4494
+          "keyword": "управляет пользователями настройками",
+          "matched_skill": "Frontend",
+          "similarity": 0.2696,
+          "weight": 0.6065
         },
         {
-          "keyword": "заявку администратор сможет",
-          "matched_skill": "Docker",
-          "similarity": 0.2346,
-          "weight": 0.4101
+          "keyword": "postgresql поддержкой географических",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.6349,
+          "weight": 0.6063
         },
         {
-          "keyword": "тестовая заявка небольшая",
-          "matched_skill": "REST API",
-          "similarity": 0.2391,
-          "weight": 0.3781
+          "keyword": "для автоматизации логистических",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.4459,
+          "weight": 0.5967
         },
         {
-          "keyword": "технические требования добавить",
-          "matched_skill": "REST API",
-          "similarity": 0.3241,
-          "weight": 0.3645
+          "keyword": "маршрутизации можно использовать",
+          "matched_skill": "Frontend",
+          "similarity": 0.2155,
+          "weight": 0.5911
+        },
+        {
+          "keyword": "должен содержать интерактивную",
+          "matched_skill": "Frontend",
+          "similarity": 0.2873,
+          "weight": 0.5867
+        },
+        {
+          "keyword": "курьеров клиентскую страницу",
+          "matched_skill": "Frontend",
+          "similarity": 0.3317,
+          "weight": 0.5795
+        },
+        {
+          "keyword": "тарифами диспетчер контролирует",
+          "matched_skill": "Frontend",
+          "similarity": 0.1577,
+          "weight": 0.5726
+        },
+        {
+          "keyword": "идентификатор данные отправителя",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.2386,
+          "weight": 0.5682
+        },
+        {
+          "keyword": "менеджеры распределяют заказы",
+          "matched_skill": "Frontend",
+          "similarity": 0.2203,
+          "weight": 0.5655
+        },
+        {
+          "keyword": "аналитики показателями количество",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.3204,
+          "weight": 0.5539
+        },
+        {
+          "keyword": "разработать панель аналитики",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.3827,
+          "weight": 0.5538
+        },
+        {
+          "keyword": "очереди отчёты должны",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.3265,
+          "weight": 0.5476
+        },
+        {
+          "keyword": "до 50 диспетчеров",
+          "matched_skill": "Frontend",
+          "similarity": 0.2028,
+          "weight": 0.5425
+        },
+        {
+          "keyword": "должна поддерживать websocket",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.198,
+          "weight": 0.5357
+        },
+        {
+          "keyword": "специалиста по алгоритмам",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.5275,
+          "weight": 0.5131
+        },
+        {
+          "keyword": "возможность вручную переназначить",
+          "matched_skill": "Frontend",
+          "similarity": 0.3412,
+          "weight": 0.5089
+        },
+        {
+          "keyword": "отслеживание доставки расширенная",
+          "matched_skill": "Frontend",
+          "similarity": 0.3055,
+          "weight": 0.5071
+        },
+        {
+          "keyword": "временных данных допускается",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.2992,
+          "weight": 0.5019
+        },
+        {
+          "keyword": "карту курьерами заказами",
+          "matched_skill": "Frontend",
+          "similarity": 0.4061,
+          "weight": 0.501
+        },
+        {
+          "keyword": "данных допускается redis",
+          "matched_skill": "Python",
+          "similarity": 0.1657,
+          "weight": 0.4891
+        },
+        {
+          "keyword": "одного тестировщика бюджет",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.2846,
+          "weight": 0.484
+        },
+        {
+          "keyword": "маршрутами доставки наша",
+          "matched_skill": "Frontend",
+          "similarity": 0.4168,
+          "weight": 0.4826
+        },
+        {
+          "keyword": "маршруты таблицах отслеживают",
+          "matched_skill": "Frontend",
+          "similarity": 0.3331,
+          "weight": 0.4786
+        },
+        {
+          "keyword": "кэширования текущих координат",
+          "matched_skill": "Frontend",
+          "similarity": 0.3712,
+          "weight": 0.4676
+        },
+        {
+          "keyword": "одновременных пользователей клиентского",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.1961,
+          "weight": 0.465
+        },
+        {
+          "keyword": "процент доставок выполненных",
+          "matched_skill": "Frontend",
+          "similarity": 0.1949,
+          "weight": 0.4616
+        },
+        {
+          "keyword": "разработку mvp отводится",
+          "matched_skill": "Frontend",
+          "similarity": 0.2692,
+          "weight": 0.46
+        },
+        {
+          "keyword": "код клиентское",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.3188,
+          "weight": 0.4571
+        },
+        {
+          "keyword": "доставок выполненных вовремя",
+          "matched_skill": "Frontend",
+          "similarity": 0.2626,
+          "weight": 0.4562
+        },
+        {
+          "keyword": "хранить уникальный идентификатор",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.2364,
+          "weight": 0.4555
+        },
+        {
+          "keyword": "сложная оптимизация маршрутов",
+          "matched_skill": "Frontend",
+          "similarity": 0.2665,
+          "weight": 0.449
+        },
+        {
+          "keyword": "войти создание заказов",
+          "matched_skill": "Frontend",
+          "similarity": 0.4024,
+          "weight": 0.4485
+        },
+        {
+          "keyword": "проекта 500 000",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.1638,
+          "weight": 0.4462
+        },
+        {
+          "keyword": "postgis для кэширования",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.527,
+          "weight": 0.4429
+        },
+        {
+          "keyword": "таблицу заказов фильтры",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.3026,
+          "weight": 0.4361
+        },
+        {
+          "keyword": "клиентская страница должна",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.3016,
+          "weight": 0.43
+        },
+        {
+          "keyword": "openapi система должна",
+          "matched_skill": "Frontend",
+          "similarity": 0.1545,
+          "weight": 0.4298
+        },
+        {
+          "keyword": "эффективность работы формирует",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.2124,
+          "weight": 0.4275
+        },
+        {
+          "keyword": "смартфонов удобен",
+          "matched_skill": "Frontend",
+          "similarity": 0.1776,
+          "weight": 0.4231
+        },
+        {
+          "keyword": "заказы распределение маршруты",
+          "matched_skill": "Frontend",
+          "similarity": 0.28,
+          "weight": 0.4089
+        },
+        {
+          "keyword": "несколько городов увеличение",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.131,
+          "weight": 0.4035
+        },
+        {
+          "keyword": "backend",
+          "matched_skill": "Frontend",
+          "similarity": 0.7625,
+          "weight": 0.4
+        },
+        {
+          "keyword": "интернет магазинов для",
+          "matched_skill": "Frontend",
+          "similarity": 0.3188,
+          "weight": 0.392
+        },
+        {
+          "keyword": "габариты категорию груза",
+          "matched_skill": "Frontend",
+          "similarity": 0.2689,
+          "weight": 0.3761
+        },
+        {
+          "keyword": "ожидается до 10",
+          "matched_skill": "Frontend",
+          "similarity": 0.2578,
+          "weight": 0.374
+        },
+        {
+          "keyword": "телефону самостоятельно обрабатывают",
+          "matched_skill": "Frontend",
+          "similarity": 0.1576,
+          "weight": 0.3695
+        },
+        {
+          "keyword": "должны поддерживать выгрузку",
+          "matched_skill": "Frontend",
+          "similarity": 0.3288,
+          "weight": 0.3621
+        },
+        {
+          "keyword": "неудачных попыток среднее",
+          "matched_skill": "Python",
+          "similarity": 0.2495,
+          "weight": 0.3588
+        },
+        {
+          "keyword": "необходимо хранить контактные",
+          "matched_skill": "Frontend",
+          "similarity": 0.2445,
+          "weight": 0.3539
+        },
+        {
+          "keyword": "пересчитывать маршрут интерфейс",
+          "matched_skill": "Frontend",
+          "similarity": 0.3153,
+          "weight": 0.3537
+        },
+        {
+          "keyword": "отслеживания перспективе планируется",
+          "matched_skill": "Frontend",
+          "similarity": 0.3757,
+          "weight": 0.348
+        },
+        {
+          "keyword": "планируется расширение",
+          "matched_skill": "Frontend",
+          "similarity": 0.1884,
+          "weight": 0.3224
+        },
+        {
+          "keyword": "день неделю месяц",
+          "matched_skill": "Frontend",
+          "similarity": 0.1983,
+          "weight": 0.3219
+        },
+        {
+          "keyword": "основная задача системы",
+          "matched_skill": "Frontend",
+          "similarity": 0.3336,
+          "weight": 0.321
+        },
+        {
+          "keyword": "телефон получателя вес",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.1026,
+          "weight": 0.3089
+        },
+        {
+          "keyword": "выгрузку csv excel",
+          "matched_skill": "PostgreSQL",
+          "similarity": 0.3702,
+          "weight": 0.3078
+        },
+        {
+          "keyword": "поддержку русского английского",
+          "matched_skill": "Python",
+          "similarity": 0.2566,
+          "weight": 0.295
+        },
+        {
+          "keyword": "одновременно работающих",
+          "matched_skill": "Frontend",
+          "similarity": 0.4521,
+          "weight": 0.2914
+        },
+        {
+          "keyword": "статусам панель",
+          "matched_skill": "Frontend",
+          "similarity": 0.4068,
+          "weight": 0.2731
+        },
+        {
+          "keyword": "отводится 10 недель",
+          "matched_skill": "Machine Learning",
+          "similarity": 0.1506,
+          "weight": 0.2635
+        },
+        {
+          "keyword": "велосипеды автомобили мотоциклы",
+          "matched_skill": "Frontend",
+          "similarity": 0.2139,
+          "weight": 0.232
+        },
+        {
+          "keyword": "typescript для хранения",
+          "matched_skill": "Python",
+          "similarity": 0.1941,
+          "weight": 0.2311
+        },
+        {
+          "keyword": "рублей первую версию",
+          "matched_skill": "Frontend",
+          "similarity": 0.2212,
+          "weight": 0.2262
+        },
+        {
+          "keyword": "минималистичной понятной отображением",
+          "matched_skill": "Frontend",
+          "similarity": 0.3505,
+          "weight": 0.2247
         }
       ]
     },
     {
       "executor_id": "executor_003",
       "executor_name": "Алексей",
-      "score": 0.2531,
+      "score": 0.2941,
+      "matched_skills_count": 2,
       "matched_keywords": [
         {
-          "keyword": "изменять подпись кнопки",
+          "keyword": "роли администратор управляет",
           "matched_skill": "Docker",
-          "similarity": 0.2038,
-          "weight": 0.6772
+          "similarity": 0.2787,
+          "weight": 0.7479
         },
         {
-          "keyword": "кнопке пользовательском интерфейсе",
+          "keyword": "автоматическое распределение заказов",
           "matched_skill": "Docker",
-          "similarity": 0.2897,
-          "weight": 0.6655
+          "similarity": 0.2994,
+          "weight": 0.7357
         },
         {
-          "keyword": "текстом отправить заявку",
+          "keyword": "000 заказов сутки",
           "matched_skill": "Kubernetes",
-          "similarity": 0.2071,
-          "weight": 0.5508
+          "similarity": 0.2778,
+          "weight": 0.7186
         },
         {
-          "keyword": "кнопки включая цвет",
-          "matched_skill": "Kubernetes",
-          "similarity": 0.182,
-          "weight": 0.5504
+          "keyword": "интерфейс диспетчера должен",
+          "matched_skill": "Docker",
+          "similarity": 0.2794,
+          "weight": 0.7072
         },
         {
-          "keyword": "отображается пользователям если",
-          "matched_skill": "Kubernetes",
-          "similarity": 0.3448,
-          "weight": 0.4872
+          "keyword": "диспетчер контролирует",
+          "matched_skill": "Docker",
+          "similarity": 0.4581,
+          "weight": 0.7062
         },
         {
-          "keyword": "внутренний веб интерфейс",
+          "keyword": "доставки менеджер анализирует",
+          "matched_skill": "Docker",
+          "similarity": 0.3206,
+          "weight": 0.7049
+        },
+        {
+          "keyword": "создание веб платформы",
           "matched_skill": "Java",
-          "similarity": 0.27,
-          "weight": 0.4827
+          "similarity": 0.2329,
+          "weight": 0.6931
         },
         {
-          "keyword": "изменения архитектуры приложения",
-          "matched_skill": "Java",
-          "similarity": 0.2595,
-          "weight": 0.4494
+          "keyword": "показателями количество заказов",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3419,
+          "weight": 0.6922
         },
         {
-          "keyword": "заявку администратор сможет",
+          "keyword": "платформы для управления",
           "matched_skill": "Docker",
-          "similarity": 0.2346,
-          "weight": 0.4101
+          "similarity": 0.3918,
+          "weight": 0.6712
         },
         {
-          "keyword": "тестовая заявка небольшая",
+          "keyword": "разработчиков двух frontend",
           "matched_skill": "Kubernetes",
-          "similarity": 0.3002,
-          "weight": 0.3781
+          "similarity": 0.3273,
+          "weight": 0.6574
         },
         {
-          "keyword": "технические требования добавить",
+          "keyword": "заказов система должна",
+          "matched_skill": "Docker",
+          "similarity": 0.3156,
+          "weight": 0.6465
+        },
+        {
+          "keyword": "содержать интерактивную карту",
           "matched_skill": "Kubernetes",
-          "similarity": 0.2737,
-          "weight": 0.3645
+          "similarity": 0.2448,
+          "weight": 0.6464
+        },
+        {
+          "keyword": "клиентов необходимо создать",
+          "matched_skill": "Docker",
+          "similarity": 0.273,
+          "weight": 0.6454
+        },
+        {
+          "keyword": "диспетчеров до 000",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.312,
+          "weight": 0.6407
+        },
+        {
+          "keyword": "интернет магазинов планирует",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.1507,
+          "weight": 0.631
+        },
+        {
+          "keyword": "увеличение количества заказов",
+          "matched_skill": "Docker",
+          "similarity": 0.2399,
+          "weight": 0.6201
+        },
+        {
+          "keyword": "управляет пользователями настройками",
+          "matched_skill": "Docker",
+          "similarity": 0.2425,
+          "weight": 0.6065
+        },
+        {
+          "keyword": "postgresql поддержкой географических",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.2956,
+          "weight": 0.6063
+        },
+        {
+          "keyword": "для автоматизации логистических",
+          "matched_skill": "Docker",
+          "similarity": 0.3543,
+          "weight": 0.5967
+        },
+        {
+          "keyword": "маршрутизации можно использовать",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.1227,
+          "weight": 0.5911
+        },
+        {
+          "keyword": "должен содержать интерактивную",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.2695,
+          "weight": 0.5867
+        },
+        {
+          "keyword": "курьеров клиентскую страницу",
+          "matched_skill": "Docker",
+          "similarity": 0.324,
+          "weight": 0.5795
+        },
+        {
+          "keyword": "тарифами диспетчер контролирует",
+          "matched_skill": "Docker",
+          "similarity": 0.26,
+          "weight": 0.5726
+        },
+        {
+          "keyword": "идентификатор данные отправителя",
+          "matched_skill": "Docker",
+          "similarity": 0.2796,
+          "weight": 0.5682
+        },
+        {
+          "keyword": "менеджеры распределяют заказы",
+          "matched_skill": "Docker",
+          "similarity": 0.2918,
+          "weight": 0.5655
+        },
+        {
+          "keyword": "аналитики показателями количество",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.4016,
+          "weight": 0.5539
+        },
+        {
+          "keyword": "разработать панель аналитики",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3044,
+          "weight": 0.5538
+        },
+        {
+          "keyword": "очереди отчёты должны",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3309,
+          "weight": 0.5476
+        },
+        {
+          "keyword": "до 50 диспетчеров",
+          "matched_skill": "Docker",
+          "similarity": 0.3487,
+          "weight": 0.5425
+        },
+        {
+          "keyword": "должна поддерживать websocket",
+          "matched_skill": "Java",
+          "similarity": 0.1692,
+          "weight": 0.5357
+        },
+        {
+          "keyword": "специалиста по алгоритмам",
+          "matched_skill": "Docker",
+          "similarity": 0.3616,
+          "weight": 0.5131
+        },
+        {
+          "keyword": "возможность вручную переназначить",
+          "matched_skill": "Docker",
+          "similarity": 0.3288,
+          "weight": 0.5089
+        },
+        {
+          "keyword": "отслеживание доставки расширенная",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3379,
+          "weight": 0.5071
+        },
+        {
+          "keyword": "временных данных допускается",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.2051,
+          "weight": 0.5019
+        },
+        {
+          "keyword": "карту курьерами заказами",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.4222,
+          "weight": 0.501
+        },
+        {
+          "keyword": "данных допускается redis",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.1355,
+          "weight": 0.4891
+        },
+        {
+          "keyword": "одного тестировщика бюджет",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3049,
+          "weight": 0.484
+        },
+        {
+          "keyword": "маршрутами доставки наша",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3825,
+          "weight": 0.4826
+        },
+        {
+          "keyword": "маршруты таблицах отслеживают",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.2423,
+          "weight": 0.4786
+        },
+        {
+          "keyword": "кэширования текущих координат",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3427,
+          "weight": 0.4676
+        },
+        {
+          "keyword": "одновременных пользователей клиентского",
+          "matched_skill": "Docker",
+          "similarity": 0.1998,
+          "weight": 0.465
+        },
+        {
+          "keyword": "процент доставок выполненных",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.2218,
+          "weight": 0.4616
+        },
+        {
+          "keyword": "разработку mvp отводится",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.4286,
+          "weight": 0.46
+        },
+        {
+          "keyword": "код клиентское",
+          "matched_skill": "Java",
+          "similarity": 0.3363,
+          "weight": 0.4571
+        },
+        {
+          "keyword": "доставок выполненных вовремя",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.4031,
+          "weight": 0.4562
+        },
+        {
+          "keyword": "хранить уникальный идентификатор",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.262,
+          "weight": 0.4555
+        },
+        {
+          "keyword": "сложная оптимизация маршрутов",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.1966,
+          "weight": 0.449
+        },
+        {
+          "keyword": "войти создание заказов",
+          "matched_skill": "Docker",
+          "similarity": 0.3742,
+          "weight": 0.4485
+        },
+        {
+          "keyword": "проекта 500 000",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.2927,
+          "weight": 0.4462
+        },
+        {
+          "keyword": "postgis для кэширования",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.2069,
+          "weight": 0.4429
+        },
+        {
+          "keyword": "таблицу заказов фильтры",
+          "matched_skill": "Docker",
+          "similarity": 0.3482,
+          "weight": 0.4361
+        },
+        {
+          "keyword": "клиентская страница должна",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.206,
+          "weight": 0.43
+        },
+        {
+          "keyword": "openapi система должна",
+          "matched_skill": "Java",
+          "similarity": 0.163,
+          "weight": 0.4298
+        },
+        {
+          "keyword": "эффективность работы формирует",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.2702,
+          "weight": 0.4275
+        },
+        {
+          "keyword": "смартфонов удобен",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.1732,
+          "weight": 0.4231
+        },
+        {
+          "keyword": "заказы распределение маршруты",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.2508,
+          "weight": 0.4089
+        },
+        {
+          "keyword": "несколько городов увеличение",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.1843,
+          "weight": 0.4035
+        },
+        {
+          "keyword": "backend",
+          "matched_skill": "Docker",
+          "similarity": 0.366,
+          "weight": 0.4
+        },
+        {
+          "keyword": "интернет магазинов для",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3265,
+          "weight": 0.392
+        },
+        {
+          "keyword": "габариты категорию груза",
+          "matched_skill": "Docker",
+          "similarity": 0.3034,
+          "weight": 0.3761
+        },
+        {
+          "keyword": "ожидается до 10",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3061,
+          "weight": 0.374
+        },
+        {
+          "keyword": "телефону самостоятельно обрабатывают",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.15,
+          "weight": 0.3695
+        },
+        {
+          "keyword": "должны поддерживать выгрузку",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3764,
+          "weight": 0.3621
+        },
+        {
+          "keyword": "неудачных попыток среднее",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3473,
+          "weight": 0.3588
+        },
+        {
+          "keyword": "необходимо хранить контактные",
+          "matched_skill": "Docker",
+          "similarity": 0.2798,
+          "weight": 0.3539
+        },
+        {
+          "keyword": "пересчитывать маршрут интерфейс",
+          "matched_skill": "Java",
+          "similarity": 0.1822,
+          "weight": 0.3537
+        },
+        {
+          "keyword": "отслеживания перспективе планируется",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3265,
+          "weight": 0.348
+        },
+        {
+          "keyword": "планируется расширение",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3309,
+          "weight": 0.3224
+        },
+        {
+          "keyword": "день неделю месяц",
+          "matched_skill": "Spring Boot",
+          "similarity": 0.3614,
+          "weight": 0.3219
+        },
+        {
+          "keyword": "основная задача системы",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.4181,
+          "weight": 0.321
+        },
+        {
+          "keyword": "телефон получателя вес",
+          "matched_skill": "Docker",
+          "similarity": 0.1935,
+          "weight": 0.3089
+        },
+        {
+          "keyword": "выгрузку csv excel",
+          "matched_skill": "Java",
+          "similarity": 0.1407,
+          "weight": 0.3078
+        },
+        {
+          "keyword": "поддержку русского английского",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.4559,
+          "weight": 0.295
+        },
+        {
+          "keyword": "одновременно работающих",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.5349,
+          "weight": 0.2914
+        },
+        {
+          "keyword": "статусам панель",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3829,
+          "weight": 0.2731
+        },
+        {
+          "keyword": "отводится 10 недель",
+          "matched_skill": "Spring Boot",
+          "similarity": 0.2427,
+          "weight": 0.2635
+        },
+        {
+          "keyword": "велосипеды автомобили мотоциклы",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.1822,
+          "weight": 0.232
+        },
+        {
+          "keyword": "typescript для хранения",
+          "matched_skill": "Java",
+          "similarity": 0.3174,
+          "weight": 0.2311
+        },
+        {
+          "keyword": "рублей первую версию",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.3865,
+          "weight": 0.2262
+        },
+        {
+          "keyword": "минималистичной понятной отображением",
+          "matched_skill": "Kubernetes",
+          "similarity": 0.469,
+          "weight": 0.2247
         }
       ]
     }

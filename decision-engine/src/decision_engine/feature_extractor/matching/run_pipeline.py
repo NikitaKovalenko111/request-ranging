@@ -20,6 +20,7 @@ MODEL_PATH = (
     / 'models'
     / 'feature-extractor'
     / 'matching'
+    / 'models'
     / "paraphrase-multilingual-MiniLM-L12-v2"
 )
 

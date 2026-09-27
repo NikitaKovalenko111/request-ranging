@@ -11,6 +11,7 @@ BASE_DIR = PROJECT_ROOT / 'examples' / 'feature_extractor'
 KEYWORDS_FILE = BASE_DIR / "result.json"
 EXECUTORS_FILE = BASE_DIR / "executors.json"
 OUTPUT_FILE = BASE_DIR / "matching_result.json"
+MATCH_THRESHOLD = 0.40
 
 
 def load_json(path: Path):
@@ -26,6 +27,7 @@ def calculate_matching(model, keywords, executor):
             "executor_id": executor["id"],
             "executor_name": executor.get("name"),
             "score": 0.0,
+            "matched_skills_count": 0,
             "matched_keywords": [],
         }
 
@@ -51,6 +53,7 @@ def calculate_matching(model, keywords, executor):
     matched_keywords = []
     weighted_sum = 0.0
     total_weight = 0.0
+    matched_skills = set()
 
     for i, keyword in enumerate(keywords):
         row = similarities[i]
@@ -59,6 +62,9 @@ def calculate_matching(model, keywords, executor):
         best_similarity = float(row[best_index].item())
 
         weight = max(float(keyword.get("weight", 1.0)), 0.0)
+
+        if best_similarity >= MATCH_THRESHOLD:
+            matched_skills.add(skills[best_index])
 
         weighted_sum += best_similarity * weight
         total_weight += weight
@@ -80,6 +86,7 @@ def calculate_matching(model, keywords, executor):
         "executor_id": executor["id"],
         "executor_name": executor.get("name"),
         "score": round(score, 4),
+        "matched_skills_count": len(matched_skills),
         "matched_keywords": matched_keywords,
     }
 

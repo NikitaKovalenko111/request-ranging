@@ -6,6 +6,7 @@ One Python project for the complete executor selection pipeline:
 2. Feature Extractor enriches the order and eligible candidates.
 3. ML Ranker scores the enriched eligible candidates.
 4. Balancer uses runtime load and returns the final order.
+5. Kafka publisher sends the completed decision event.
 
 All modules share one namespace:
 
@@ -14,6 +15,7 @@ All modules share one namespace:
 - decision_engine.ml_ranker
 - decision_engine.balancer
 - decision_engine.pipeline
+- decision_engine.publisher
 
 Feature Extractor remains a separate project and is not part of this merge.
 
@@ -49,3 +51,6 @@ runs first; Feature Extractor receives only eligible executors. Its async
 decide method returns all stage results and selected_executor_id. Local runs can
 use HeuristicFeatureExtractor, HeuristicRanker and InMemoryLoadRepository;
 production can inject PredictorFeatureExtractor, MLRanker and RedisLoadRepository.
+DecisionPipeline also requires a result publisher. Use
+KafkaDecisionResultPublisher in production and InMemoryDecisionResultPublisher
+in tests and local examples.

@@ -7,6 +7,7 @@ from decision_engine import DecisionPipeline, ExecutorProfile, PipelineOrder
 from decision_engine.balancer import Balancer, ExecutorLoad, InMemoryLoadRepository
 from decision_engine.feature_extractor import HeuristicFeatureExtractor
 from decision_engine.ml_ranker.inference import HeuristicRanker
+from decision_engine.publisher import InMemoryDecisionResultPublisher
 from decision_engine.rule_engine.domain import ExecutorSettings, OrderStatus, OrderType
 from decision_engine.rule_engine.engine import default_rule_engine
 
@@ -28,6 +29,7 @@ def profile(user_id: int, experience: float, *, active: bool = True) -> Executor
 
 @pytest.mark.asyncio
 async def test_pipeline_filters_ranks_and_balances() -> None:
+    publisher = InMemoryDecisionResultPublisher()
     pipeline = DecisionPipeline(
         default_rule_engine(),
         HeuristicFeatureExtractor(),
@@ -40,6 +42,7 @@ async def test_pipeline_filters_ranks_and_balances() -> None:
                 }
             )
         ),
+        publisher,
     )
     order = PipelineOrder(
         id=101,
@@ -66,6 +69,11 @@ async def test_pipeline_filters_ranks_and_balances() -> None:
     assert [item.executor_id for item in result.ml_ranking] == ['1', '2']
     assert [item.executor_id for item in result.balanced_candidates] == ['2', '1']
     assert result.selected_executor_id == '2'
+    assert publisher.events[0]['event_type'] == 'ExecutorDecisionCompleted'
+    assert publisher.events[0]['balanced_candidates'][0]['executor_id'] == '2'
+    assert 'rule_engine' not in publisher.events[0]
+    assert 'feature_extractor' not in publisher.events[0]
+    assert 'ml_ranking' not in publisher.events[0]
 
 
 @pytest.mark.asyncio
@@ -75,6 +83,7 @@ async def test_pipeline_handles_no_eligible_executors() -> None:
         HeuristicFeatureExtractor(),
         HeuristicRanker(),
         Balancer(InMemoryLoadRepository()),
+        InMemoryDecisionResultPublisher(),
     )
     order = PipelineOrder(
         id=102,
@@ -101,6 +110,7 @@ async def test_pipeline_extracts_ranker_order_features_from_text() -> None:
         HeuristicFeatureExtractor(),
         HeuristicRanker(),
         Balancer(InMemoryLoadRepository()),
+        InMemoryDecisionResultPublisher(),
     )
     order = PipelineOrder(
         id=103,

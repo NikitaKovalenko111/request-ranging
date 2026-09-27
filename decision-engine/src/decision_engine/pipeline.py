@@ -17,6 +17,7 @@ from .ml_ranker.inference import Ranker
 from .ml_ranker.schemas import Executor as RankerExecutor
 from .ml_ranker.schemas import Order as RankerOrder
 from .ml_ranker.schemas import RankedExecutor
+from .publisher import DecisionResultPublisher
 from .rule_engine.domain import Executor as RuleExecutor
 from .rule_engine.domain import ExecutorSettings, FilterResult
 from .rule_engine.domain import Order as RuleOrder
@@ -147,11 +148,13 @@ class DecisionPipeline:
         feature_extractor: FeatureExtractor,
         ranker: Ranker,
         balancer: Balancer,
+        result_publisher: DecisionResultPublisher,
     ) -> None:
         self._rule_engine = rule_engine
         self._feature_extractor = feature_extractor
         self._ranker = ranker
         self._balancer = balancer
+        self._result_publisher = result_publisher
 
     async def decide(
         self,
@@ -197,13 +200,15 @@ class DecisionPipeline:
             BalancerOrder(order_id=str(order.id), weight=order.weight),
             candidates,
         )
-        return PipelineResult(
+        result = PipelineResult(
             order_id=order.id,
             rule_result=rule_result,
             extracted_features=extracted_features,
             ml_ranking=tuple(ml_ranking),
             balanced_candidates=tuple(balanced),
         )
+        await self._result_publisher.publish(result)
+        return result
 
     @staticmethod
     def _index_profiles(executors: Sequence[ExecutorProfile]) -> dict[int, ExecutorProfile]:

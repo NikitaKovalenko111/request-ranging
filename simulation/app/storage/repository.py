@@ -150,6 +150,7 @@ class ExecutorRepository:
         capacity: float,
         daily_limit: Optional[int],
         attributes: Dict[str, Any],
+        skills: Optional[List[str]] = None,
         version: int = 1,
     ) -> ExecutorRow:
         row = ExecutorRow(
@@ -158,6 +159,7 @@ class ExecutorRepository:
             capacity=capacity,
             daily_limit=daily_limit,
             version=version,
+            skills_json=json.dumps(skills or [], ensure_ascii=False),
             attributes_json=json.dumps(attributes, ensure_ascii=False),
             created_at=now_iso(),
             updated_at=now_iso(),
@@ -176,6 +178,7 @@ class ExecutorRepository:
                 capacity=e.get("capacity", 1.0),
                 daily_limit=e.get("daily_limit"),
                 version=e.get("version", 1),
+                skills_json=json.dumps(e.get("skills", []), ensure_ascii=False),
                 attributes_json=json.dumps(e.get("attributes", {}), ensure_ascii=False),
                 created_at=now,
                 updated_at=now,
@@ -212,6 +215,7 @@ class ExecutorRepository:
         active: Optional[bool] = None,
         capacity: Optional[float] = None,
         daily_limit: Optional[int] = None,
+        skills: Optional[List[str]] = None,
         attributes: Optional[Dict[str, Any]] = None,
     ) -> Optional[ExecutorRow]:
         row = await self.get_by_id(executor_id)
@@ -227,6 +231,9 @@ class ExecutorRepository:
             changed = True
         if daily_limit is not None and daily_limit != row.daily_limit:
             row.daily_limit = daily_limit
+            changed = True
+        if skills is not None:
+            row.skills_json = json.dumps(skills, ensure_ascii=False)
             changed = True
         if attributes is not None:
             current_attrs = json.loads(row.attributes_json) if row.attributes_json else {}

@@ -20,6 +20,7 @@ class ExecutorCreate(BaseModel):
     active: bool = True
     capacity: float = Field(gt=0, default=1.0)
     daily_limit: Optional[int] = None
+    skills: Optional[List[str]] = Field(default_factory=list)
     attributes: Optional[Dict[str, Any]] = None
 
 
@@ -27,6 +28,7 @@ class ExecutorPatch(BaseModel):
     active: Optional[bool] = None
     capacity: Optional[float] = Field(default=None, gt=0)
     daily_limit: Optional[int] = None
+    skills: Optional[List[str]] = None
     attributes: Optional[Dict[str, Any]] = None
 
 
@@ -38,6 +40,7 @@ class Executor(BaseModel):
     capacity: float
     daily_limit: Optional[int] = None
     version: int
+    skills: List[str] = Field(default_factory=list)
     attributes: Dict[str, Any]
     created_at: Optional[str] = None
     updated_at: Optional[str] = None

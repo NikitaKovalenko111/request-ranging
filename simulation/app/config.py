@@ -43,6 +43,10 @@ class Settings(BaseModel):
 
     database_url: str = Field(default_factory=lambda: os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./ais.db"))
 
+    # Настройки скорости потока и пиковых нагрузок
+    orders_per_hour: float = Field(default_factory=lambda: float(os.getenv("ORDERS_PER_HOUR", "4000.0")))
+    max_peak_per_sec: int = Field(default_factory=lambda: int(os.getenv("MAX_PEAK_PER_SEC", "5")))
+
     @classmethod
     def load(cls) -> "Settings":
         addr = os.getenv("APP_HTTP_ADDR", ":8091")

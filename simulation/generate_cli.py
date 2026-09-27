@@ -17,8 +17,9 @@ async def main():
     parser = argparse.ArgumentParser(description="AIS Simulator CLI Load Generator")
     parser.add_argument("--seed", action="store_true", help="Seed 21 preset executors")
     parser.add_argument("--burst", type=int, default=0, help="Trigger instant burst of N orders (e.g. --burst 1000)")
-    parser.add_argument("--target", type=int, default=0, help="Target total orders to generate (e.g. --target 10000)")
-    parser.add_argument("--mode", type=str, default="wave", choices=["wave", "normal", "slow", "burst_at_start"], help="Generation pattern (wave = fluctuating rates)")
+    parser.add_argument("--mode", type=str, default="linear_with_spikes", choices=["linear_with_spikes", "stream_4k", "wave", "normal", "slow", "burst_at_start"], help="Generation pattern (default: linear_with_spikes = ~4000/hour with spikes)")
+    parser.add_argument("--rate-hour", type=float, default=4000.0, help="Target orders per hour (default: 4000)")
+    parser.add_argument("--max-peak", type=int, default=5, help="Max orders per second during spikes (default: 5)")
     parser.add_argument("--status", action="store_true", help="Print current database metrics")
     args = parser.parse_args()
 
@@ -36,8 +37,13 @@ async def main():
         print(f"Burst complete: {res}")
 
     if args.target > 0:
-        print(f"Starting fluctuating load generator towards {args.target} orders in mode '{args.mode}'...")
-        await load_generator.start(mode=args.mode, target=args.target)
+        print(f"Starting load generator towards {args.target} orders (mode='{args.mode}', rate={args.rate_hour}/h, max_peak={args.max_peak}/s)...")
+        await load_generator.start(
+            mode=args.mode,
+            target=args.target,
+            orders_per_hour=args.rate_hour,
+            max_peak_per_sec=args.max_peak,
+        )
         try:
             while load_generator.is_running():
                 async with async_session_factory() as session:

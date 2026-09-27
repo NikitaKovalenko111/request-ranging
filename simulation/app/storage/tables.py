@@ -51,6 +51,7 @@ class ExecutorRow(Base):
     capacity = Column(Float, nullable=False, default=1.0)
     daily_limit = Column(Integer, nullable=True)
     version = Column(Integer, nullable=False, default=1)
+    skills_json = Column(Text, nullable=False, default="[]")
     attributes_json = Column(Text, nullable=False, default="{}")
     created_at = Column(String(32), default=now_iso)
     updated_at = Column(String(32), default=now_iso, onupdate=now_iso)
@@ -60,12 +61,17 @@ class ExecutorRow(Base):
             attrs = json.loads(self.attributes_json)
         except Exception:
             attrs = {}
+        try:
+            skills = json.loads(self.skills_json)
+        except Exception:
+            skills = []
         return {
             "executor_id": self.executor_id,
             "active": self.active,
             "capacity": self.capacity,
             "daily_limit": self.daily_limit,
             "version": self.version,
+            "skills": skills,
             "attributes": attrs,
             "created_at": self.created_at,
             "updated_at": self.updated_at,

@@ -27,6 +27,7 @@ async def create_executor(
         active=payload.active,
         capacity=payload.capacity,
         daily_limit=payload.daily_limit,
+        skills=payload.skills or [],
         attributes=payload.attributes or {},
         version=1,
     )
@@ -74,6 +75,7 @@ async def patch_executor(
         active=payload.active,
         capacity=payload.capacity,
         daily_limit=payload.daily_limit,
+        skills=payload.skills,
         attributes=payload.attributes,
     )
     if not row:

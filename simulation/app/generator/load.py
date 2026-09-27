@@ -10,6 +10,15 @@ from ..kafka.producer import kafka_producer
 
 logger = logging.getLogger("ais.load_generator")
 
+# ==============================================================================
+# НАСТРОЙКИ СКОРОСТИ И ПИКОВОЙ НАГРУЗКИ (МОЖНО МЕНЯТЬ ПРЯМО ЗДЕСЬ)
+# ==============================================================================
+TARGET_ORDERS_PER_HOUR: float = 4000.0   # Скорость потока: заявок в час (в среднем ~1.11 заявки/сек)
+MAX_PEAK_PER_SECOND: int = 5             # Максимальный пик: заявок в секунду во время скачка
+SPIKE_PROBABILITY: float = 0.08          # Вероятность скачка (~8% времени - всплеск, 92% - ровный линейный поток)
+MIN_SPIKE_ORDERS: int = 2                # Минимальный размер скачка при всплеске (от 2 до 5)
+# ==============================================================================
+
 ORDER_TYPES = ["LEGAL_REVIEW", "CONSULTATION", "CLAIM_PROCESSING"]
 SUBJECTS = ["contract", "claims", "payments", "compliance"]
 CLIENT_MSPS = ["small", "medium", "large"]
@@ -29,11 +38,16 @@ class LoadGenerator:
     def __init__(self):
         self._running = False
         self._task: Optional[asyncio.Task] = None
-        self.mode = "idle"  # idle, wave, normal, slow, target_10k
+        self.mode = "idle"  # idle, linear_with_spikes, stream_4k, wave, normal, slow
         self.total_generated = 0
         self.burst_count = 0
         self.current_rate = 0.0
         self.target_total = 10000
+
+        # Настраиваемые параметры скорости
+        self.orders_per_hour = TARGET_ORDERS_PER_HOUR
+        self.max_peak_per_sec = MAX_PEAK_PER_SECOND
+        self.spike_probability = SPIKE_PROBABILITY
 
     def is_running(self) -> bool:
         return self._running and self._task is not None and not self._task.done()
@@ -72,8 +86,7 @@ class LoadGenerator:
 
     async def execute_burst(self, count: int = 1000) -> Dict[str, Any]:
         """
-        Instant burst of `count` orders (e.g. 1000 orders in one moment).
-        Uses chunked bulk inserts and batch event publishing for maximum speed.
+        Мгновенный залп на `count` заявок (например, 1000 заявок за долю секунды).
         """
         start_time = time.time()
         logger.info(f"Triggering INSTANT BURST of {count} orders...")
@@ -83,8 +96,6 @@ class LoadGenerator:
             await_ids = await repo.get_await_order_ids(limit=50)
 
         orders_to_insert = []
-        batch_events = []
-
         base_index = self.total_generated + 1
         for i in range(count):
             order_idx = base_index + i
@@ -95,7 +106,6 @@ class LoadGenerator:
             order_dict = self.generate_single_order_dict(order_idx, parent_id=parent_id)
             orders_to_insert.append(order_dict)
 
-        # Batch insert in chunks of 250 for database stability
         chunk_size = 250
         for i in range(0, len(orders_to_insert), chunk_size):
             chunk = orders_to_insert[i : i + chunk_size]
@@ -103,7 +113,6 @@ class LoadGenerator:
                 repo = OrderRepository(session)
                 await repo.bulk_create(chunk)
 
-            # Publish order created events
             for ord_dict in chunk:
                 await kafka_producer.publish_order_created(ord_dict)
 
@@ -120,16 +129,30 @@ class LoadGenerator:
             "total_generated": self.total_generated,
         }
 
-    async def start(self, mode: str = "wave", target: int = 10000):
+    async def start(
+        self,
+        mode: str = "linear_with_spikes",
+        target: int = 10000,
+        orders_per_hour: Optional[float] = None,
+        max_peak_per_sec: Optional[int] = None,
+    ):
         if self.is_running():
             logger.warning("Load generator is already running.")
             return
+
+        if orders_per_hour is not None and orders_per_hour > 0:
+            self.orders_per_hour = orders_per_hour
+        if max_peak_per_sec is not None and max_peak_per_sec > 0:
+            self.max_peak_per_sec = max_peak_per_sec
 
         self._running = True
         self.mode = mode
         self.target_total = target
         self._task = asyncio.create_task(self._run_loop(mode))
-        logger.info(f"Started load generator in mode '{mode}' with target {target} orders.")
+        logger.info(
+            f"Started load generator in mode '{mode}': "
+            f"base rate ~{self.orders_per_hour:.0f}/hour, max peak ~{self.max_peak_per_sec}/sec, target {target} orders."
+        )
 
     async def stop(self):
         self._running = False
@@ -145,25 +168,22 @@ class LoadGenerator:
 
     async def _run_loop(self, mode: str):
         """
-        Background loop generating fluctuating / jumping load up to target_total.
-        Modes:
-          - 'wave': rate jumps erratically (e.g. 2 req/s -> 30 req/s -> 80 req/s -> 5 req/s)
-          - 'burst_at_start': immediately fires 1k burst, then wave fluctuations
-          - 'normal': steady ~10 orders/sec
-          - 'slow': steady ~1 order/sec
+        Фоновый цикл генерации нагрузки:
+          - 'linear_with_spikes' (по умолчанию): ровный линейный поток ~4000/час со случайными скачками до max_peak_per_sec.
+          - 'stream_4k': чистый последовательный поток 4000/час (1 заявка каждые ~0.90 сек).
+          - 'wave': волновой скачкообразный режим с крупными всплесками.
+          - 'normal': 10 заявок/сек.
+          - 'slow': 1 заявка/сек.
         """
         try:
-            # Check if burst at start is requested
-            if mode in ("burst_at_start", "wave"):
-                # Initial 1k burst if total orders are low (< 1000)
+            if mode == "burst_at_start":
                 async with async_session_factory() as session:
                     repo = OrderRepository(session)
                     existing_count = await repo.count_orders()
-                if existing_count < 1000 and mode == "burst_at_start":
+                if existing_count < 1000:
                     await self.execute_burst(1000)
 
             while self._running:
-                # Check target limit
                 async with async_session_factory() as session:
                     repo = OrderRepository(session)
                     current_count = await repo.count_orders()
@@ -175,15 +195,31 @@ class LoadGenerator:
                     await asyncio.sleep(5.0)
                     continue
 
-                # Determine fluctuating rate ("а так они прыгали")
-                if mode in ("wave", "burst_at_start"):
-                    # Fluctuating state machine:
+                # 1. Режим: в основном линейный поток ~4000/час со скачками до max_peak_per_sec
+                if mode in ("linear_with_spikes", "default"):
+                    is_spike = random.random() < self.spike_probability
+                    if is_spike:
+                        # Скачок: в эту секунду вылетает пачка заявок (до max_peak_per_sec)
+                        step_orders = random.randint(MIN_SPIKE_ORDERS, max(MIN_SPIKE_ORDERS, self.max_peak_per_sec))
+                        delay = 1.0
+                    else:
+                        # Линейный ровный шаг: по 1 заявке с интервалом под целевую часовую скорость
+                        step_orders = 1
+                        base_interval = 3600.0 / max(self.orders_per_hour, 1.0)  # ~0.90 сек при 4000/ч
+                        delay = random.uniform(base_interval * 0.95, base_interval * 1.05)
+
+                elif mode in ("stream_4k", "hourly_4000", "stream"):
+                    # Строго последовательный поток ~4000 заявок/час (1 заявка каждые ~0.90с)
+                    step_orders = 1
+                    base_interval = 3600.0 / max(self.orders_per_hour, 1.0)
+                    delay = random.uniform(base_interval * 0.98, base_interval * 1.02)
+
+                elif mode in ("wave", "burst_at_start"):
                     state = random.choices(
                         ["calm", "moderate", "spike", "micro_burst"],
                         weights=[40, 35, 15, 10],
                         k=1,
                     )[0]
-
                     if state == "calm":
                         step_orders = random.randint(1, 4)
                         delay = random.uniform(0.5, 1.2)
@@ -191,10 +227,10 @@ class LoadGenerator:
                         step_orders = random.randint(8, 20)
                         delay = random.uniform(0.4, 0.8)
                     elif state == "spike":
-                        step_orders = random.randint(30, 60)
+                        step_orders = random.randint(25, max(25, self.max_peak_per_sec * 2))
                         delay = random.uniform(0.3, 0.6)
-                    else:  # micro_burst
-                        step_orders = random.randint(80, 150)
+                    else:
+                        step_orders = random.randint(50, 100)
                         delay = random.uniform(0.2, 0.5)
 
                 elif mode == "normal":
@@ -204,10 +240,10 @@ class LoadGenerator:
                     step_orders = 1
                     delay = 1.0
                 else:
-                    step_orders = 5
-                    delay = 0.5
+                    step_orders = 1
+                    delay = 3600.0 / max(self.orders_per_hour, 1.0)
 
-                # Generate step orders
+                # Генерация пачки заявок
                 orders_batch = []
                 base_idx = current_count + 1
                 for i in range(step_orders):
@@ -216,7 +252,7 @@ class LoadGenerator:
                         parent_id = random.choice(await_ids)
                     orders_batch.append(self.generate_single_order_dict(base_idx + i, parent_id=parent_id))
 
-                # Insert and publish
+                # Вставка в БД и отправка в Kafka
                 async with async_session_factory() as session:
                     repo = OrderRepository(session)
                     await repo.bulk_create(orders_batch)

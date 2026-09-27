@@ -13,8 +13,10 @@ router = APIRouter(prefix="/api/v1/simulation", tags=["Simulation Control"])
 
 
 class StartSimulationRequest(BaseModel):
-    mode: str = Field(default="wave", description="Modes: 'wave' (jumping load), 'burst_at_start', 'normal', 'slow'")
+    mode: str = Field(default="linear_with_spikes", description="Modes: 'linear_with_spikes' (linear ~4000/h with spikes), 'stream_4k', 'wave', 'burst_at_start', 'normal', 'slow'")
     target_orders: int = Field(default=10000, description="Target total orders in database")
+    orders_per_hour: Optional[float] = Field(default=4000.0, description="Target orders per hour")
+    max_peak_per_sec: Optional[int] = Field(default=5, description="Max orders per second during spikes")
     start_lifecycle: bool = Field(default=True, description="Also start automatic lifecycle simulator")
 
 
@@ -30,7 +32,12 @@ async def start_simulation(
     # Ensure database is seeded with preset executors
     await seed_database(session)
 
-    await load_generator.start(mode=req.mode, target=req.target_orders)
+    await load_generator.start(
+        mode=req.mode,
+        target=req.target_orders,
+        orders_per_hour=req.orders_per_hour,
+        max_peak_per_sec=req.max_peak_per_sec,
+    )
     if req.start_lifecycle and not lifecycle_simulator.is_running():
         await lifecycle_simulator.start()
 
@@ -38,6 +45,8 @@ async def start_simulation(
         "status": "started",
         "mode": req.mode,
         "target_orders": req.target_orders,
+        "orders_per_hour": load_generator.orders_per_hour,
+        "max_peak_per_sec": load_generator.max_peak_per_sec,
         "lifecycle_running": lifecycle_simulator.is_running(),
     }
 

@@ -138,6 +138,7 @@ class KafkaEventProducer:
             "capacity": executor_dict["capacity"],
             "daily_limit": executor_dict.get("daily_limit"),
             "version": executor_dict.get("version", 1),
+            "skills": executor_dict.get("skills", []),
             "attributes": executor_dict["attributes"],
         }
         envelope = EventEnvelope(
@@ -155,6 +156,7 @@ class KafkaEventProducer:
             "capacity": executor_dict["capacity"],
             "daily_limit": executor_dict.get("daily_limit"),
             "version": executor_dict["version"],
+            "skills": executor_dict.get("skills", []),
             "attributes": executor_dict["attributes"],
         }
         envelope = EventEnvelope(

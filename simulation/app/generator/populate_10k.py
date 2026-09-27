@@ -301,6 +301,7 @@ async def populate_database():
                 capacity=e["capacity"],
                 daily_limit=e.get("daily_limit"),
                 version=1,
+                skills_json=json.dumps(e.get("skills", []), ensure_ascii=False),
                 attributes_json=json.dumps(e["attributes"], ensure_ascii=False),
                 created_at=now_iso(),
                 updated_at=now_iso(),

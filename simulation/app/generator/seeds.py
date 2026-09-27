@@ -1,4 +1,5 @@
 import logging
+import random
 from typing import List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..storage.repository import ExecutorRepository, OrderRepository
@@ -6,12 +7,29 @@ from ..kafka.producer import kafka_producer
 
 logger = logging.getLogger("ais.seeds")
 
+SKILLS_POOL = [
+    # Dev & Tech
+    "Python", "PostgreSQL", "Docker", "Kubernetes", "FastAPI", "Go", "Java", "React", "TypeScript", "Redis",
+    "Linux", "Git", "MachineLearning", "DataScience", "CyberSecurity", "GraphQL", "Microservices",
+    # Law & Compliance
+    "ContractLaw", "TaxAudit", "DueDiligence", "ComplianceAudit", "115-FZ", "GDPR_Compliance", "CorporateLaw",
+    "LaborLaw", "Litigation", "Arbitration",
+    # Finance & Management
+    "FinancialModeling", "RiskAnalysis", "1C_Enterprise", "Accounting", "ForensicAudit", "CostOptimization",
+    "M&A", "CryptoAssets",
+    # Soft skills & Languages
+    "English_C1", "German_B2", "Chinese_HSK4", "Negotiations", "PublicSpeaking", "AgileScrum", "ConflictResolution",
+    # Tools & Design
+    "Figma", "Excel_Advanced", "PowerBI", "BPMN", "Jira", "UI/UX",
+]
+
 PRESET_EXECUTORS: List[Dict[str, Any]] = [
     {
         "executor_id": "executor-01",
         "active": True,
         "capacity": 1.0,
         "daily_limit": 50,
+        "skills": ["Python", "PostgreSQL", "Docker"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 500000,
@@ -28,6 +46,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 1.0,
         "daily_limit": 60,
+        "skills": ["ContractLaw", "TaxAudit", "Excel_Advanced"],
         "attributes": {
             "min_accept_sum": 50000,
             "max_accept_sum": 800000,
@@ -44,6 +63,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 1.5,
         "daily_limit": 80,
+        "skills": ["Python", "RiskAnalysis", "English_C1", "FastAPI"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 1500000,
@@ -60,6 +80,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 1.5,
         "daily_limit": 75,
+        "skills": ["DueDiligence", "CorporateLaw", "Negotiations", "FinancialModeling"],
         "attributes": {
             "min_accept_sum": 100000,
             "max_accept_sum": 2000000,
@@ -76,6 +97,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 2.0,
         "daily_limit": 100,
+        "skills": ["PostgreSQL", "Docker", "MachineLearning", "ContractLaw", "AgileScrum"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 5000000,
@@ -92,6 +114,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 0.5,
         "daily_limit": 30,
+        "skills": ["1C_Enterprise", "Accounting", "Excel_Advanced"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 300000,
@@ -108,6 +131,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 0.5,
         "daily_limit": 35,
+        "skills": ["ComplianceAudit", "115-FZ", "PublicSpeaking"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 400000,
@@ -124,6 +148,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 1.0,
         "daily_limit": None,  # Unlimited
+        "skills": ["Python", "Kubernetes", "Linux", "Git"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 1000000,
@@ -140,6 +165,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 1.5,
         "daily_limit": None,  # Unlimited
+        "skills": ["RiskAnalysis", "FinancialModeling", "PowerBI", "English_C1"],
         "attributes": {
             "min_accept_sum": 50000,
             "max_accept_sum": 2500000,
@@ -156,6 +182,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 2.0,
         "daily_limit": 120,
+        "skills": ["LaborLaw", "Litigation", "Negotiations", "Arbitration"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 10000000,
@@ -172,6 +199,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 1.0,
         "daily_limit": 70,
+        "skills": ["FastAPI", "Redis", "Docker", "GraphQL"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 800000,
@@ -188,6 +216,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 1.0,
         "daily_limit": 50,
+        "skills": ["ContractLaw", "GDPR_Compliance", "German_B2"],
         "attributes": {
             "min_accept_sum": 10000,
             "max_accept_sum": 600000,
@@ -204,6 +233,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 1.5,
         "daily_limit": 90,
+        "skills": ["Go", "PostgreSQL", "Microservices", "Jira"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 3000000,
@@ -220,6 +250,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 2.0,
         "daily_limit": None,  # Unlimited
+        "skills": ["TaxAudit", "ForensicAudit", "CostOptimization", "M&A"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 5000000,
@@ -236,6 +267,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 0.5,
         "daily_limit": 40,
+        "skills": ["Figma", "React", "TypeScript", "UI/UX"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 500000,
@@ -252,6 +284,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 1.0,
         "daily_limit": 60,
+        "skills": ["CyberSecurity", "Linux", "Git"],
         "attributes": {
             "min_accept_sum": 50000,
             "max_accept_sum": 900000,
@@ -268,6 +301,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 1.5,
         "daily_limit": 80,
+        "skills": ["DataScience", "Python", "PowerBI", "BPMN"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 2000000,
@@ -284,6 +318,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 1.0,
         "daily_limit": 50,
+        "skills": ["Chinese_HSK4", "English_C1", "DueDiligence"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 700000,
@@ -300,6 +335,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": False,  # Inactive by default for test scenarios
         "capacity": 1.0,
         "daily_limit": 50,
+        "skills": ["ConflictResolution", "AgileScrum", "Negotiations"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 1000000,
@@ -316,6 +352,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": False,  # Inactive by default for test scenarios
         "capacity": 1.5,
         "daily_limit": 100,
+        "skills": ["CryptoAssets", "RiskAnalysis", "FinancialModeling"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 2000000,
@@ -332,6 +369,7 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         "active": True,
         "capacity": 2.0,
         "daily_limit": 150,
+        "skills": ["Python", "Docker", "PostgreSQL", "ContractLaw", "FinancialModeling", "Negotiations"],
         "attributes": {
             "min_accept_sum": 0,
             "max_accept_sum": 10000000,
@@ -344,6 +382,10 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
         },
     },
 ]
+
+
+def get_random_skills(k: int = 3) -> List[str]:
+    return random.sample(SKILLS_POOL, min(k, len(SKILLS_POOL)))
 
 
 async def seed_database(session: AsyncSession, seed_orders: bool = False):
@@ -359,6 +401,7 @@ async def seed_database(session: AsyncSession, seed_orders: bool = False):
                     active=item["active"],
                     capacity=item["capacity"],
                     daily_limit=item["daily_limit"],
+                    skills=item.get("skills", []),
                     attributes=item["attributes"],
                     version=1,
                 )

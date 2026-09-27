@@ -17,7 +17,7 @@ class StartSimulationRequest(BaseModel):
     target_orders: int = Field(default=10000, description="Target total orders in database")
     orders_per_hour: Optional[float] = Field(default=4000.0, description="Target orders per hour")
     max_peak_per_sec: Optional[int] = Field(default=5, description="Max orders per second during spikes")
-    start_lifecycle: bool = Field(default=True, description="Also start automatic lifecycle simulator")
+    start_lifecycle: bool = Field(default=False, description="Also start automatic lifecycle simulator (default: False for initial integration)")
 
 
 class BurstRequest(BaseModel):

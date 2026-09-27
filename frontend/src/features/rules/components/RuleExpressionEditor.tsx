@@ -3,7 +3,7 @@ import { Select } from '../../../shared/components/Select';
 import { RuleOperandEditor } from './RuleOperandEditor';
 import { OPERATOR_LABELS } from '../../../types/ruleSchema';
 import type { RuleSchema, RuleOperator } from '../../../types/ruleSchema';
-import type { RuleExpression } from '../../../types/rule';
+import type { RuleDraft } from '../../../types/rule';
 
 export function RuleExpressionEditor({
     control,
@@ -11,7 +11,7 @@ export function RuleExpressionEditor({
     schema,
     onRemove,
 }: {
-    control: Control<RuleExpression>;
+    control: Control<RuleDraft>;
     name: string;
     schema: RuleSchema;
     onRemove?: () => void;

@@ -5,7 +5,7 @@ import { BooleanSelect } from '../../../shared/components/form/BooleanSelect';
 import { EnumSelect } from '../../../shared/components/form/EnumSelect';
 import { MultiValueInput } from '../../../shared/components/form/MultiValueInput';
 import type { RuleSchema, RuleFieldDefinition } from '../../../types/ruleSchema';
-import type { RuleExpression } from '../../../types/rule';
+import type { RuleDraft, RuleExpression } from '../../../types/rule';
 
 export function RuleOperandEditor({
     control,
@@ -13,7 +13,7 @@ export function RuleOperandEditor({
     schema,
     fieldDef,
 }: {
-    control: Control<any>;
+    control: Control<RuleDraft>;
     name: string;
     schema: RuleSchema;
     fieldDef?: RuleFieldDefinition;
@@ -21,7 +21,7 @@ export function RuleOperandEditor({
     return (
         <Controller
             control={control}
-            name={name}
+            name={name as never}
             render={({ field }) => {
                 const value = field.value as RuleExpression['right'];
                 const setType = (type: 'CONSTANT' | 'FIELD') => {

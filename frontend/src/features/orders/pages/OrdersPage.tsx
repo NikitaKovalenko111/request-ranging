@@ -42,13 +42,13 @@ export function OrdersPage() {
   const [params, setParams] = useSearchParams();
   const filters = readFilters(params);
   const query = useOrders(filters);
-  const executorsQuery = useExecutors();
+  const executorsQuery = useExecutors({ limit: 100, offset: 0 });
   const error = query.error as unknown as ApiError | null;
   const total = query.data?.pagination.total ?? 0;
   const page = Math.floor(filters.offset / filters.limit) + 1;
   const pageCount = Math.max(1, Math.ceil(total / filters.limit));
   const update = (next: Filters) => setParams(writeFilters(next), { replace: true });
-  const executors = (executorsQuery.data ?? []).map((item) => ({ id: item.id, name: item.displayName }));
+  const executors = (executorsQuery.data?.items ?? []).map((item) => ({ id: item.id, name: item.displayName }));
 
   return <div className="page-stack">
     <div className="page-actions"><div><h2 className="page-lead">Все входящие заявки</h2><p>Жизненный цикл, назначение и объяснение каждого решения.</p></div><DataFreshness updatedAt={query.dataUpdatedAt || undefined} fetching={query.isFetching} /></div>

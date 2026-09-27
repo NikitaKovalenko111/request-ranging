@@ -1,0 +1,45 @@
+[build-system]
+requires = ['setuptools>=75']
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'executor-decision-engine'
+version = '0.1.0'
+description = 'Rule filtering, ML ranking and runtime load balancing pipeline'
+requires-python = '>=3.11'
+dependencies = [
+    'aiokafka>=0.10,<1',
+    'redis>=5,<7',
+    'catboost>=1.2,<2',
+    'numpy>=2,<3',
+    'pandas>=2.2,<4',
+]
+
+[project.optional-dependencies]
+dev = ['pytest>=8,<10', 'pytest-asyncio>=0.24,<2']
+feature-extractor = [
+    'keybert',
+    'langdetect',
+    'scikit-learn',
+    'sentence-transformers',
+    'torch',
+    'transformers',
+]
+
+[project.scripts]
+decision-rule-worker = 'decision_engine.rule_engine.main:run'
+decision-ranker-train = 'decision_engine.ml_ranker.train:main'
+decision-ranker-demo = 'decision_engine.ml_ranker.inference:main'
+decision-feature-train = 'decision_engine.feature_extractor.classifier.train:main'
+decision-feature-evaluate = 'decision_engine.feature_extractor.classifier.evaluate:main'
+decision-feature-predict = 'decision_engine.feature_extractor.classifier.predict:main'
+decision-feature-matching = 'decision_engine.feature_extractor.matching.run_pipeline:main'
+
+[tool.setuptools.packages.find]
+where = ['src']
+
+[tool.pytest.ini_options]
+pythonpath = ['src']
+testpaths = ['tests']
+addopts = '-q'
+asyncio_mode = 'auto'

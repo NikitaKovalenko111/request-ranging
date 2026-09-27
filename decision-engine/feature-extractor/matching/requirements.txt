@@ -1,4 +1,0 @@
-keybert
-sentence-transformers
-langdetect
-torch

@@ -20,25 +20,34 @@ class KafkaEventProducer:
         self.is_connected = False
         self.in_memory_log: List[Dict[str, Any]] = []  # For debug and testing inspection
 
-    async def start(self):
+    async def start(self, retries: int = 15, initial_delay: float = 2.0):
         if not settings.kafka_enabled:
             logger.info("Kafka is disabled by configuration (KAFKA_ENABLED=false). Events will be logged to memory/console.")
             return
 
-        try:
-            self.producer = AIOKafkaProducer(
-                bootstrap_servers=settings.kafka_brokers,
-                key_serializer=lambda k: k.encode("utf-8") if isinstance(k, str) else k,
-                value_serializer=lambda v: json.dumps(v, ensure_ascii=False).encode("utf-8"),
-                request_timeout_ms=5000,
-            )
-            await self.producer.start()
-            self.is_connected = True
-            logger.info(f"Connected to Kafka brokers at {settings.kafka_brokers}")
-        except Exception as e:
-            logger.warning(f"Failed to connect to Kafka brokers at {settings.kafka_brokers}: {e}. Running in standalone mock mode.")
-            self.producer = None
-            self.is_connected = False
+        delay = initial_delay
+        for attempt in range(1, retries + 1):
+            try:
+                self.producer = AIOKafkaProducer(
+                    bootstrap_servers=settings.kafka_brokers,
+                    key_serializer=lambda k: k.encode("utf-8") if isinstance(k, str) else k,
+                    value_serializer=lambda v: json.dumps(v, ensure_ascii=False).encode("utf-8"),
+                    request_timeout_ms=5000,
+                )
+                await self.producer.start()
+                self.is_connected = True
+                logger.info(f"Connected to Kafka brokers at {settings.kafka_brokers} (attempt {attempt}/{retries})")
+                return
+            except Exception as e:
+                logger.warning(f"Kafka connection attempt {attempt}/{retries} to {settings.kafka_brokers} failed: {e}. Retrying in {delay:.1f}s...")
+                if attempt < retries:
+                    await asyncio.sleep(delay)
+                    delay = min(delay * 1.5, 10.0)
+                else:
+                    logger.error(f"Failed to connect to Kafka brokers at {settings.kafka_brokers} after {retries} attempts.")
+                    self.producer = None
+                    self.is_connected = False
+                    raise KafkaPublishError(f"Cannot connect to Kafka brokers at {settings.kafka_brokers} after {retries} attempts: {e}") from e
 
     async def stop(self):
         if self.producer and self.is_connected:

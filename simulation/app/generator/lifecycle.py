@@ -61,7 +61,7 @@ class LifecycleSimulator:
 
                     async with async_session_factory() as session:
                         order_repo = OrderRepository(session)
-                        updated_row, _, status_changed, prev_status = await order_repo.update_order(
+                        updated_row, _, status_changed, prev_status, _ = await order_repo.update_order(
                             order_id=order_row.order_id,
                             new_status=outcome,
                         )

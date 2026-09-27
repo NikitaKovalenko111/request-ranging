@@ -21,6 +21,7 @@ class OrderRepository:
         weight: float,
         attributes: Dict[str, Any],
         version: int = 1,
+        auto_commit: bool = True,
     ) -> OrderRow:
         row = OrderRow(
             order_id=order_id,
@@ -33,8 +34,11 @@ class OrderRepository:
             updated_at=now_iso(),
         )
         self.session.add(row)
-        await self.session.commit()
-        await self.session.refresh(row)
+        if auto_commit:
+            await self.session.commit()
+            await self.session.refresh(row)
+        else:
+            await self.session.flush()
         return row
 
     async def bulk_create(self, orders: List[Dict[str, Any]]) -> List[OrderRow]:
@@ -83,6 +87,7 @@ class OrderRepository:
         new_status: Optional[str] = None,
         new_weight: Optional[float] = None,
         new_attributes: Optional[Dict[str, Any]] = None,
+        auto_commit: bool = True,
     ) -> Tuple[Optional[OrderRow], bool, bool, Optional[str], Optional[Dict[str, Any]]]:
         row = await self.get_by_id(order_id)
         if not row:
@@ -116,31 +121,48 @@ class OrderRepository:
             row.status = new_status
             row.version += 1
             row.updated_at = now_iso()
-            await self.session.commit()
-            await self.session.refresh(row)
+            if auto_commit:
+                await self.session.commit()
+                await self.session.refresh(row)
+            else:
+                await self.session.flush()
         elif has_param_changed:
             row.version += 1
             row.updated_at = now_iso()
-            await self.session.commit()
-            await self.session.refresh(row)
+            if auto_commit:
+                await self.session.commit()
+                await self.session.refresh(row)
+            else:
+                await self.session.flush()
             order_updated_dict = row.to_dict()
         elif has_status_changed:
             row.status = new_status
             row.version += 1
             row.updated_at = now_iso()
-            await self.session.commit()
-            await self.session.refresh(row)
+            if auto_commit:
+                await self.session.commit()
+                await self.session.refresh(row)
+            else:
+                await self.session.flush()
 
         return row, has_param_changed, has_status_changed, prev_status, order_updated_dict
 
-    async def assign_executor(self, order_id: str, executor_id: str) -> Optional[OrderRow]:
+    async def assign_executor(
+        self,
+        order_id: str,
+        executor_id: str,
+        auto_commit: bool = True,
+    ) -> Optional[OrderRow]:
         row = await self.get_by_id(order_id)
         if not row:
             return None
         row.assigned_executor_id = executor_id
         row.updated_at = now_iso()
-        await self.session.commit()
-        await self.session.refresh(row)
+        if auto_commit:
+            await self.session.commit()
+            await self.session.refresh(row)
+        else:
+            await self.session.flush()
         return row
 
     async def get_random_orders(self, status: str = "processed", limit: int = 20) -> List[OrderRow]:
@@ -171,6 +193,7 @@ class ExecutorRepository:
         attributes: Dict[str, Any],
         skills: Optional[List[str]] = None,
         version: int = 1,
+        auto_commit: bool = True,
     ) -> ExecutorRow:
         row = ExecutorRow(
             executor_id=executor_id,
@@ -184,8 +207,11 @@ class ExecutorRepository:
             updated_at=now_iso(),
         )
         self.session.add(row)
-        await self.session.commit()
-        await self.session.refresh(row)
+        if auto_commit:
+            await self.session.commit()
+            await self.session.refresh(row)
+        else:
+            await self.session.flush()
         return row
 
     async def bulk_create(self, executors: List[Dict[str, Any]]) -> List[ExecutorRow]:
@@ -236,6 +262,7 @@ class ExecutorRepository:
         daily_limit: Optional[int] = None,
         skills: Optional[List[str]] = None,
         attributes: Optional[Dict[str, Any]] = None,
+        auto_commit: bool = True,
     ) -> Optional[ExecutorRow]:
         row = await self.get_by_id(executor_id)
         if not row:
@@ -263,8 +290,11 @@ class ExecutorRepository:
         if changed:
             row.version += 1
             row.updated_at = now_iso()
-            await self.session.commit()
-            await self.session.refresh(row)
+            if auto_commit:
+                await self.session.commit()
+                await self.session.refresh(row)
+            else:
+                await self.session.flush()
 
         return row
 
@@ -293,6 +323,7 @@ class AssignmentRepository:
         decided_at: str,
         confirmed_at: str,
         status: str = "confirmed",
+        auto_commit: bool = True,
     ) -> AssignmentRow:
         row = AssignmentRow(
             assignment_id=assignment_id,
@@ -303,8 +334,11 @@ class AssignmentRepository:
             status=status,
         )
         self.session.add(row)
-        await self.session.commit()
-        await self.session.refresh(row)
+        if auto_commit:
+            await self.session.commit()
+            await self.session.refresh(row)
+        else:
+            await self.session.flush()
         return row
 
     async def count_assignments(self) -> int:

@@ -94,11 +94,12 @@ async def test_order_crud_and_versioning(client):
 
 
 @pytest.mark.asyncio
-async def test_kafka_error_propagation(client):
+async def test_kafka_error_propagation_and_atomic_rollback(client):
     from simulation.app.config import settings
     old_kafka_enabled = settings.kafka_enabled
     settings.kafka_enabled = True
     try:
+        # 1. Post order when Kafka fails -> returns 500
         resp = await client.post("/api/v1/orders", json={
             "order_id": "order-kafka-fail",
             "status": "processed",
@@ -114,5 +115,24 @@ async def test_kafka_error_propagation(client):
         data = resp.json()
         assert data["code"] == "KAFKA_PUBLISH_FAILED"
         assert data["retryable"] is True
+
+        # 2. Verify atomicity: order is NOT in DB
+        resp_get = await client.get("/api/v1/orders/order-kafka-fail")
+        assert resp_get.status_code == 404
     finally:
         settings.kafka_enabled = old_kafka_enabled
+
+    # 3. Retry after Kafka recovery: succeeds and does NOT return ORDER_ALREADY_EXISTS
+    resp_retry = await client.post("/api/v1/orders", json={
+        "order_id": "order-kafka-fail",
+        "status": "processed",
+        "weight": 1.0,
+        "attributes": {
+            "sum": 100000,
+            "order_type": "LEGAL_REVIEW",
+            "subject": "contract",
+            "vip": False,
+        },
+    })
+    assert resp_retry.status_code == 201
+    assert resp_retry.json()["order_id"] == "order-kafka-fail"

@@ -232,6 +232,11 @@ await → новая заявка со статусом processed и запол�
   "capacity": 1.5,
   "daily_limit": 100,
   "version": 3,
+  "skills": [
+    "Python",
+    "PostgreSQL",
+    "Docker"
+  ],
   "attributes": {
     "min_accept_sum": 0,
     "max_accept_sum": 1000000,
@@ -252,6 +257,7 @@ await → новая заявка со статусом processed и запол�
 - `capacity` должна быть больше нуля;
 - `daily_limit` может быть `null`, что означает отсутствие лимита;
 - `version` начинается с `1` и увеличивается при изменении;
+- `skills` — список навыков исполнителя (массив строк на верхнем уровне модели);
 - AIS Simulator не рассчитывает `pending_weight` и `confirmed_weight` — это ответственность Executor Balancer.
 
 ## 10. События исполнителей
@@ -279,6 +285,11 @@ await → новая заявка со статусом processed и запол�
     "capacity": 1.5,
     "daily_limit": 100,
     "version": 4,
+    "skills": [
+      "Python",
+      "PostgreSQL",
+      "Docker"
+    ],
     "attributes": {
       "min_accept_sum": 0,
       "max_accept_sum": 1000000,

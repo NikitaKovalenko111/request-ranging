@@ -30,9 +30,17 @@ async def create_executor(
         skills=payload.skills or [],
         attributes=payload.attributes or {},
         version=1,
+        auto_commit=False,
     )
     exec_dict = row.to_dict()
-    await kafka_producer.publish_executor_created(exec_dict)
+
+    try:
+        await kafka_producer.publish_executor_created(exec_dict)
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
+
     return Executor(**exec_dict)
 
 
@@ -77,6 +85,7 @@ async def patch_executor(
         daily_limit=payload.daily_limit,
         skills=payload.skills,
         attributes=payload.attributes,
+        auto_commit=False,
     )
     if not row:
         raise HTTPException(
@@ -85,5 +94,12 @@ async def patch_executor(
         )
 
     exec_dict = row.to_dict()
-    await kafka_producer.publish_executor_updated(exec_dict)
+
+    try:
+        await kafka_producer.publish_executor_updated(exec_dict)
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
+
     return Executor(**exec_dict)

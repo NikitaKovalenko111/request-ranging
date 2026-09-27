@@ -26,6 +26,12 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 9092 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 15s
 
   ais-simulator:
     build:
@@ -33,7 +39,8 @@ services:
       dockerfile: Dockerfile
     container_name: ais-simulator
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     ports:
       - "8091:8091"
     environment:
@@ -44,9 +51,9 @@ services:
       EXECUTOR_TOPIC: "ais.executors.v1"
       ASSIGNMENT_DELAY_MIN: "2s"
       ASSIGNMENT_DELAY_MAX: "10s"
-      DATABASE_URL: "sqlite+aiosqlite:///./ais.db"
+      DATABASE_URL: "sqlite+aiosqlite:////app/data/ais.db"
     volumes:
-      - ais-data:/app
+      - ais-data:/app/data
 
 volumes:
   ais-data:

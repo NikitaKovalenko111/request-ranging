@@ -164,7 +164,7 @@ async def create_assignment(
             delay = random.uniform(settings.assignment_delay_min, settings.assignment_delay_max)
             await asyncio.sleep(delay)
 
-        # 8. Persist assignment and link to order with DB IntegrityError protection
+        # 8. Persist assignment and link to order in a single atomic transaction
         confirmed_at = get_current_rfc3339()
         try:
             created_assignment = await assignment_repo.create(
@@ -174,8 +174,14 @@ async def create_assignment(
                 decided_at=payload.decided_at,
                 confirmed_at=confirmed_at,
                 status="confirmed",
+                auto_commit=False,
             )
-            await order_repo.assign_executor(payload.order_id, payload.executor_id)
+            await order_repo.assign_executor(
+                order_id=payload.order_id,
+                executor_id=payload.executor_id,
+                auto_commit=False,
+            )
+            await session.commit()
             res = AssignmentResponse(
                 assignment_id=created_assignment.assignment_id,
                 order_id=created_assignment.order_id,

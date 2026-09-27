@@ -33,9 +33,17 @@ async def create_order(
         weight=payload.weight,
         attributes=payload.attributes.model_dump(),
         version=1,
+        auto_commit=False,
     )
     order_dict = row.to_dict()
-    await kafka_producer.publish_order_created(order_dict)
+
+    try:
+        await kafka_producer.publish_order_created(order_dict)
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
+
     return Order(**order_dict)
 
 
@@ -78,6 +86,7 @@ async def patch_order(
         new_status=payload.status.value if payload.status else None,
         new_weight=payload.weight,
         new_attributes=payload.attributes,
+        auto_commit=False,
     )
     if not row:
         raise HTTPException(
@@ -87,24 +96,29 @@ async def patch_order(
 
     order_dict = row.to_dict()
 
-    # Publish events according to contract
-    if param_changed and not status_changed:
-        await kafka_producer.publish_order_updated(order_dict)
-    elif status_changed and not param_changed:
-        await kafka_producer.publish_order_status_changed(
-            order_id=order_id,
-            previous_status=prev_status or "processed",
-            status=row.status,
-            version=row.version,
-        )
-    elif param_changed and status_changed:
-        # Both changed: sequential versions (V then V+1)
-        await kafka_producer.publish_order_updated(updated_order_dict)
-        await kafka_producer.publish_order_status_changed(
-            order_id=order_id,
-            previous_status=prev_status or "processed",
-            status=row.status,
-            version=row.version,
-        )
+    try:
+        # Publish events according to contract
+        if param_changed and not status_changed:
+            await kafka_producer.publish_order_updated(order_dict)
+        elif status_changed and not param_changed:
+            await kafka_producer.publish_order_status_changed(
+                order_id=order_id,
+                previous_status=prev_status or "processed",
+                status=row.status,
+                version=row.version,
+            )
+        elif param_changed and status_changed:
+            # Both changed: sequential versions (V then V+1)
+            await kafka_producer.publish_order_updated(updated_order_dict)
+            await kafka_producer.publish_order_status_changed(
+                order_id=order_id,
+                previous_status=prev_status or "processed",
+                status=row.status,
+                version=row.version,
+            )
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
 
     return Order(**order_dict)

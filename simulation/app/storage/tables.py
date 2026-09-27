@@ -82,7 +82,7 @@ class AssignmentRow(Base):
     __tablename__ = "assignments"
 
     assignment_id = Column(String(64), primary_key=True, index=True)
-    order_id = Column(String(64), nullable=False, index=True)
+    order_id = Column(String(64), nullable=False, unique=True, index=True)
     executor_id = Column(String(64), nullable=False, index=True)
     decided_at = Column(String(32), nullable=False)
     confirmed_at = Column(String(32), nullable=True)

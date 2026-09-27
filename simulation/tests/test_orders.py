@@ -1,4 +1,5 @@
 import pytest
+from simulation.app.kafka.producer import kafka_producer
 
 
 @pytest.mark.asyncio
@@ -56,3 +57,62 @@ async def test_order_crud_and_versioning(client):
     assert resp.status_code == 200
     orders = resp.json()
     assert len(orders) >= 1
+
+    # 6. Simultaneous Patch (both parameters and status change) -> Sequential versions (v and v+1)
+    resp_create = await client.post("/api/v1/orders", json={
+        "order_id": "order-simultaneous-patch",
+        "status": "processed",
+        "weight": 1.0,
+        "attributes": {
+            "sum": 100000,
+            "order_type": "LEGAL_REVIEW",
+            "subject": "contract",
+            "vip": False,
+        },
+    })
+    assert resp_create.status_code == 201
+    kafka_producer.in_memory_log.clear()
+
+    patch_both_resp = await client.patch(
+        "/api/v1/orders/order-simultaneous-patch",
+        json={"weight": 3.0, "status": "accept"},
+    )
+    assert patch_both_resp.status_code == 200
+    patched_data = patch_both_resp.json()
+    assert patched_data["weight"] == 3.0
+    assert patched_data["status"] == "accept"
+    assert patched_data["version"] == 3
+
+    # Check published events: OrderUpdated (v=2) then OrderStatusChanged (v=3)
+    events = [entry["event"] for entry in kafka_producer.in_memory_log]
+    types = [e["event_type"] for e in events]
+    assert types == ["OrderUpdated", "OrderStatusChanged"]
+    assert events[0]["payload"]["version"] == 2
+    assert events[1]["payload"]["version"] == 3
+    assert events[1]["payload"]["previous_status"] == "processed"
+    assert events[1]["payload"]["status"] == "accept"
+
+
+@pytest.mark.asyncio
+async def test_kafka_error_propagation(client):
+    from simulation.app.config import settings
+    old_kafka_enabled = settings.kafka_enabled
+    settings.kafka_enabled = True
+    try:
+        resp = await client.post("/api/v1/orders", json={
+            "order_id": "order-kafka-fail",
+            "status": "processed",
+            "weight": 1.0,
+            "attributes": {
+                "sum": 100000,
+                "order_type": "LEGAL_REVIEW",
+                "subject": "contract",
+                "vip": False,
+            },
+        })
+        assert resp.status_code == 500
+        data = resp.json()
+        assert data["code"] == "KAFKA_PUBLISH_FAILED"
+        assert data["retryable"] is True
+    finally:
+        settings.kafka_enabled = old_kafka_enabled

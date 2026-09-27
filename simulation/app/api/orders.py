@@ -73,7 +73,7 @@ async def patch_order(
     session: AsyncSession = Depends(get_db_session),
 ):
     repo = OrderRepository(session)
-    row, param_changed, status_changed, prev_status = await repo.update_order(
+    row, param_changed, status_changed, prev_status, updated_order_dict = await repo.update_order(
         order_id=order_id,
         new_status=payload.status.value if payload.status else None,
         new_weight=payload.weight,
@@ -98,8 +98,8 @@ async def patch_order(
             version=row.version,
         )
     elif param_changed and status_changed:
-        # Both changed: publish OrderUpdated then OrderStatusChanged
-        await kafka_producer.publish_order_updated(order_dict)
+        # Both changed: sequential versions (V then V+1)
+        await kafka_producer.publish_order_updated(updated_order_dict)
         await kafka_producer.publish_order_status_changed(
             order_id=order_id,
             previous_status=prev_status or "processed",

@@ -1,10 +1,11 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .storage.database import init_db, async_session_factory
-from .kafka.producer import kafka_producer
+from .kafka.producer import kafka_producer, KafkaPublishError
 from .generator.seeds import seed_database
 from .generator.load import load_generator
 from .generator.lifecycle import lifecycle_simulator
@@ -30,9 +31,9 @@ async def lifespan(app: FastAPI):
     # 2. Start Kafka producer
     await kafka_producer.start()
 
-    # 3. Seed executors and 10k orders if not present
+    # 3. Seed preset executors (do not pre-seed orders silently: orders stream through Kafka)
     async with async_session_factory() as session:
-        await seed_database(session, seed_orders=True)
+        await seed_database(session, seed_orders=False)
 
     logger.info("AIS Simulator startup completed.")
     yield
@@ -51,6 +52,15 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+
+@app.exception_handler(KafkaPublishError)
+async def kafka_publish_error_handler(request: Request, exc: KafkaPublishError):
+    return JSONResponse(
+        status_code=500,
+        content={"code": "KAFKA_PUBLISH_FAILED", "message": str(exc), "retryable": True},
+    )
+
 
 # Enable CORS for frontend dashboard access
 app.add_middleware(

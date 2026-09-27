@@ -17,6 +17,7 @@ async def main():
     parser = argparse.ArgumentParser(description="AIS Simulator CLI Load Generator")
     parser.add_argument("--seed", action="store_true", help="Seed 21 preset executors")
     parser.add_argument("--burst", type=int, default=0, help="Trigger instant burst of N orders (e.g. --burst 1000)")
+    parser.add_argument("--target", type=int, default=0, help="Target total orders to generate")
     parser.add_argument("--mode", type=str, default="linear_with_spikes", choices=["linear_with_spikes", "stream_4k", "wave", "normal", "slow", "burst_at_start"], help="Generation pattern (default: linear_with_spikes = ~4000/hour with spikes)")
     parser.add_argument("--rate-hour", type=float, default=4000.0, help="Target orders per hour (default: 4000)")
     parser.add_argument("--max-peak", type=int, default=5, help="Max orders per second during spikes (default: 5)")

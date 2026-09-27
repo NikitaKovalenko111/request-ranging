@@ -83,10 +83,10 @@ class OrderRepository:
         new_status: Optional[str] = None,
         new_weight: Optional[float] = None,
         new_attributes: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[Optional[OrderRow], bool, bool, Optional[str]]:
+    ) -> Tuple[Optional[OrderRow], bool, bool, Optional[str], Optional[Dict[str, Any]]]:
         row = await self.get_by_id(order_id)
         if not row:
-            return None, False, False, None
+            return None, False, False, None, None
 
         has_param_changed = False
         has_status_changed = False
@@ -103,16 +103,35 @@ class OrderRepository:
             has_param_changed = True
 
         if new_status is not None and new_status != row.status:
-            row.status = new_status
             has_status_changed = True
 
-        if has_param_changed or has_status_changed:
+        order_updated_dict: Optional[Dict[str, Any]] = None
+
+        if has_param_changed and has_status_changed:
+            # Sequential versioning: first increment version for parameter change
+            row.version += 1
+            row.updated_at = now_iso()
+            order_updated_dict = row.to_dict()
+            # Then increment version for status change
+            row.status = new_status
+            row.version += 1
+            row.updated_at = now_iso()
+            await self.session.commit()
+            await self.session.refresh(row)
+        elif has_param_changed:
+            row.version += 1
+            row.updated_at = now_iso()
+            await self.session.commit()
+            await self.session.refresh(row)
+            order_updated_dict = row.to_dict()
+        elif has_status_changed:
+            row.status = new_status
             row.version += 1
             row.updated_at = now_iso()
             await self.session.commit()
             await self.session.refresh(row)
 
-        return row, has_param_changed, has_status_changed, prev_status
+        return row, has_param_changed, has_status_changed, prev_status, order_updated_dict
 
     async def assign_executor(self, order_id: str, executor_id: str) -> Optional[OrderRow]:
         row = await self.get_by_id(order_id)

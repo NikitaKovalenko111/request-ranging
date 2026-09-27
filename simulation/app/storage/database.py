@@ -44,3 +44,17 @@ async def get_db_session() -> AsyncSession:
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        # SQLite migrations for existing databases
+        if "sqlite" in settings.database_url:
+            def migrate_sqlite(sync_conn):
+                # 1. Add skills_json column to executors if not present
+                res = sync_conn.exec_driver_sql("PRAGMA table_info(executors);")
+                columns = [row[1] for row in res.fetchall()]
+                if columns and "skills_json" not in columns:
+                    sync_conn.exec_driver_sql("ALTER TABLE executors ADD COLUMN skills_json TEXT NOT NULL DEFAULT '[]';")
+
+                # 2. Ensure unique index on assignments(order_id)
+                sync_conn.exec_driver_sql("CREATE UNIQUE INDEX IF NOT EXISTS uq_assignments_order_id ON assignments(order_id);")
+
+            await conn.run_sync(migrate_sqlite)

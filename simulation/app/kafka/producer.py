@@ -9,6 +9,11 @@ from ..models.event import EventEnvelope, get_current_rfc3339
 logger = logging.getLogger("ais.kafka")
 
 
+class KafkaPublishError(RuntimeError):
+    """Raised when Kafka delivery fails while kafka_enabled=True."""
+    pass
+
+
 class KafkaEventProducer:
     def __init__(self):
         self.producer: Optional[AIOKafkaProducer] = None
@@ -51,11 +56,14 @@ class KafkaEventProducer:
         if len(self.in_memory_log) > 2000:
             self.in_memory_log.pop(0)
 
-        if self.is_connected and self.producer:
+        if settings.kafka_enabled:
+            if not self.is_connected or not self.producer:
+                raise KafkaPublishError(f"Kafka is enabled but producer is not connected to {settings.kafka_brokers}")
             try:
                 await self.producer.send_and_wait(topic, key=key, value=data)
             except Exception as e:
                 logger.error(f"Failed to publish event {envelope.event_type} to {topic}: {e}")
+                raise KafkaPublishError(f"Failed to publish event {envelope.event_type} to {topic}: {e}") from e
         else:
             logger.debug(f"[MOCK KAFKA] [{topic}] key={key} type={envelope.event_type}")
 
@@ -66,15 +74,20 @@ class KafkaEventProducer:
         if len(self.in_memory_log) > 2000:
             self.in_memory_log = self.in_memory_log[-2000:]
 
-        if self.is_connected and self.producer:
+        if settings.kafka_enabled:
+            if not self.is_connected or not self.producer:
+                raise KafkaPublishError(f"Kafka is enabled but producer is not connected to {settings.kafka_brokers}")
             tasks = []
             for key, envelope in batch:
                 data = envelope.model_dump()
                 tasks.append(self.producer.send(topic, key=key, value=data))
-            try:
-                await asyncio.gather(*tasks, return_exceptions=True)
-            except Exception as e:
-                logger.error(f"Failed to publish batch to {topic}: {e}")
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            for r in results:
+                if isinstance(r, Exception):
+                    logger.error(f"Failed to publish batch to {topic}: {r}")
+                    raise KafkaPublishError(f"Failed to publish batch to {topic}: {r}") from r
+        else:
+            logger.debug(f"[MOCK KAFKA] [{topic}] batch size={len(batch)}")
 
     async def publish_order_created(self, order_dict: Dict[str, Any]):
         payload = {

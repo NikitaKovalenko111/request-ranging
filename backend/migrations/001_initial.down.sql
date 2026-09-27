@@ -1,0 +1,10 @@
+BEGIN;
+
+DROP TABLE IF EXISTS processed_events;
+DROP TABLE IF EXISTS decision_traces;
+DROP TABLE IF EXISTS assignments;
+DROP TABLE IF EXISTS rules;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS executors;
+
+COMMIT;

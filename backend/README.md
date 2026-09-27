@@ -22,7 +22,7 @@ Get-Content -Raw .\migrations\001_initial.up.sql |
     docker compose exec -T postgres psql -U executor_balancer -d executor_balancer
 ```
 
-Миграция создаёт таблицы заявок, исполнителей, правил, назначений, истории решений и обработанных Kafka событий.
+Миграции создают таблицы заявок, исполнителей, правил, назначений, истории решений и обработанных Kafka событий. После обновления существующего окружения примените новые миграции `002_executor_skills.up.sql` и `003_assignment_integrity.up.sql` вручную, если PostgreSQL volume уже был создан.
 
 ## Локальный запуск приложения
 

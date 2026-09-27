@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE executors DROP COLUMN IF EXISTS skills;
+
+COMMIT;

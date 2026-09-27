@@ -16,6 +16,7 @@ type SnapshotPayload struct {
 	Capacity   float64        `json:"capacity"`
 	DailyLimit *int           `json:"daily_limit,omitempty"`
 	Version    int64          `json:"version"`
+	Skills     []string       `json:"skills"`
 	Attributes map[string]any `json:"attributes"`
 }
 
@@ -25,6 +26,17 @@ func (p SnapshotPayload) Validate() error {
 	}
 	if p.Attributes == nil {
 		return fmt.Errorf("invalid executor snapshot payload: attributes are required")
+	}
+	seenSkills := make(map[string]struct{}, len(p.Skills))
+	for _, skill := range p.Skills {
+		skill = strings.TrimSpace(skill)
+		if skill == "" {
+			return fmt.Errorf("invalid executor snapshot payload: skill must not be empty")
+		}
+		if _, duplicate := seenSkills[skill]; duplicate {
+			return fmt.Errorf("invalid executor snapshot payload: duplicate skill %q", skill)
+		}
+		seenSkills[skill] = struct{}{}
 	}
 	return nil
 }

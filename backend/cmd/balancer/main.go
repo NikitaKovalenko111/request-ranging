@@ -142,6 +142,7 @@ func run() error {
 	signalContext, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	go runReservationCleanup(signalContext, appLogger, reservationRepository, cfg.Reservation.TTL)
+	go runDailyCounterReset(signalContext, appLogger, redisExecutorRepository, time.Now)
 
 	serverErrors := make(chan error, 1)
 	go func() {
@@ -183,6 +184,41 @@ func run() error {
 
 	appLogger.Info("service stopped")
 	return nil
+}
+
+type dailyCounterRepository interface {
+	ResetProcessedToday(ctx context.Context) (int64, error)
+}
+
+func runDailyCounterReset(
+	ctx context.Context,
+	appLogger *slog.Logger,
+	repository dailyCounterRepository,
+	now func() time.Time,
+) {
+	for {
+		timer := time.NewTimer(untilNextUTCMidnight(now()))
+		select {
+		case <-ctx.Done():
+			if !timer.Stop() {
+				<-timer.C
+			}
+			return
+		case <-timer.C:
+			count, err := repository.ResetProcessedToday(ctx)
+			if err != nil {
+				appLogger.Error("reset daily executor counters", "error", err)
+				continue
+			}
+			appLogger.Info("daily executor counters reset", "executors", count)
+		}
+	}
+}
+
+func untilNextUTCMidnight(value time.Time) time.Duration {
+	utc := value.UTC()
+	next := time.Date(utc.Year(), utc.Month(), utc.Day()+1, 0, 0, 0, 0, time.UTC)
+	return next.Sub(utc)
 }
 
 func runReservationCleanup(

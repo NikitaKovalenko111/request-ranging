@@ -2,7 +2,6 @@ package reservations
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -11,10 +10,6 @@ import (
 
 	reservationmodel "request-ranging/executor-balancer/internal/models/reservation"
 	"request-ranging/executor-balancer/internal/repository"
-)
-
-var (
-	ErrReservationState = errors.New("reservation has unexpected state")
 )
 
 type evaluator interface {
@@ -80,7 +75,7 @@ func (r *Repository) Refresh(ctx context.Context, value *reservationmodel.Reserv
 		return fmt.Errorf("refresh reservation %q: %w", value.ID, err)
 	}
 	if code != 1 {
-		return fmt.Errorf("refresh reservation %q: %w", value.ID, ErrReservationState)
+		return fmt.Errorf("refresh reservation %q: %w", value.ID, repository.ErrReservationState)
 	}
 	return nil
 }
@@ -96,7 +91,7 @@ func (r *Repository) Confirm(ctx context.Context, value reservationmodel.Reserva
 		return fmt.Errorf("confirm reservation %q: %w", value.ID, err)
 	}
 	if code != 1 {
-		return fmt.Errorf("confirm reservation %q: %w", value.ID, ErrReservationState)
+		return fmt.Errorf("confirm reservation %q: %w", value.ID, repository.ErrReservationState)
 	}
 	return nil
 }
@@ -110,7 +105,7 @@ func (r *Repository) Cancel(ctx context.Context, value reservationmodel.Reservat
 		return fmt.Errorf("cancel reservation %q: %w", value.ID, err)
 	}
 	if code != 1 {
-		return fmt.Errorf("cancel reservation %q: %w", value.ID, ErrReservationState)
+		return fmt.Errorf("cancel reservation %q: %w", value.ID, repository.ErrReservationState)
 	}
 	return nil
 }

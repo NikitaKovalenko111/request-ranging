@@ -3,6 +3,7 @@ package executorrepo
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	executormodel "request-ranging/executor-balancer/internal/models/executor"
@@ -14,6 +15,10 @@ type Repository struct{ database *sql.DB }
 func New(database *sql.DB) *Repository { return &Repository{database: database} }
 
 func (r *Repository) Upsert(ctx context.Context, value *executormodel.Executor) error {
+	skills, err := json.Marshal(value.Skills)
+	if err != nil {
+		return fmt.Errorf("encode executor skills: %w", err)
+	}
 	attributes, err := shared.EncodeMap(value.Attributes)
 	if err != nil {
 		return err
@@ -21,7 +26,7 @@ func (r *Repository) Upsert(ctx context.Context, value *executormodel.Executor) 
 	if _, err := r.database.ExecContext(
 		ctx, upsertQuery, value.ID, value.Version, value.Active, value.Capacity,
 		value.CurrentLoad, value.ActiveCount, value.PendingCount, value.ProcessedToday,
-		attributes, value.LastAssignmentAt,
+		skills, attributes, value.LastAssignmentAt,
 	); err != nil {
 		return fmt.Errorf("upsert executor: %w", err)
 	}
@@ -37,7 +42,7 @@ func (r *Repository) GetByID(ctx context.Context, id string) (*executormodel.Exe
 }
 
 func (r *Repository) ListActive(ctx context.Context) ([]executormodel.Executor, error) {
-	rows, err := r.database.QueryContext(ctx, selectQuery+" WHERE active = TRUE ORDER BY id")
+	rows, err := r.database.QueryContext(ctx, selectActiveRuntimeQuery)
 	if err != nil {
 		return nil, fmt.Errorf("list active executors: %w", err)
 	}
@@ -63,13 +68,17 @@ type scanner interface {
 
 func scan(source scanner) (*executormodel.Executor, error) {
 	var value executormodel.Executor
+	var skills []byte
 	var attributes []byte
 	err := source.Scan(
 		&value.ID, &value.Version, &value.Active, &value.Capacity, &value.CurrentLoad,
-		&value.ActiveCount, &value.PendingCount, &value.ProcessedToday, &attributes,
+		&value.ActiveCount, &value.PendingCount, &value.ProcessedToday, &skills, &attributes,
 		&value.LastAssignmentAt, &value.CreatedAt, &value.UpdatedAt,
 	)
 	if err != nil {
+		return nil, err
+	}
+	if err := shared.DecodeJSON(skills, &value.Skills); err != nil {
 		return nil, err
 	}
 	if err := shared.DecodeJSON(attributes, &value.Attributes); err != nil {

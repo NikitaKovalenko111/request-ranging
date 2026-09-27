@@ -11,6 +11,7 @@ import (
 	assignmentmodel "request-ranging/executor-balancer/internal/models/assignment"
 	decisionmodel "request-ranging/executor-balancer/internal/models/decision"
 	reservationmodel "request-ranging/executor-balancer/internal/models/reservation"
+	"request-ranging/executor-balancer/internal/repository"
 	decisionservice "request-ranging/executor-balancer/internal/services/decision"
 )
 
@@ -21,9 +22,11 @@ type decisionService interface {
 type assignmentRepository interface {
 	GetLatestByOrderID(ctx context.Context, orderID string) (*assignmentmodel.Assignment, error)
 	SetStatus(ctx context.Context, id string, status assignmentmodel.Status, errorMessage *string) error
+	ReconcileConfirmed(ctx context.Context, id, executorID string, confirmedAt time.Time) error
 }
 
 type reservationRepository interface {
+	TryReserve(ctx context.Context, value *reservationmodel.Reservation) (bool, error)
 	Refresh(ctx context.Context, value *reservationmodel.Reservation) error
 	Confirm(ctx context.Context, value reservationmodel.Reservation, confirmedAt time.Time) error
 	Cancel(ctx context.Context, value reservationmodel.Reservation) error
@@ -31,6 +34,7 @@ type reservationRepository interface {
 
 type aisClient interface {
 	Assign(ctx context.Context, value ais.AssignmentRequest) (ais.AssignmentResponse, error)
+	GetAssignedExecutor(ctx context.Context, orderID string) (string, error)
 }
 
 type Service struct {
@@ -85,6 +89,12 @@ func (s *Service) ProcessDecision(ctx context.Context, result decisionmodel.Resu
 		}
 
 		apiError := new(ais.APIError)
+		if errors.As(err, &apiError) && apiError.StatusCode == http.StatusConflict {
+			if reconcileErr := s.reconcileConflict(ctx, outcome); reconcileErr != nil {
+				return errors.Join(err, reconcileErr)
+			}
+			return nil
+		}
 		tryNext := errors.As(err, &apiError) && apiError.StatusCode == http.StatusUnprocessableEntity
 		status := assignmentmodel.StatusFailed
 		if tryNext {
@@ -121,7 +131,7 @@ func (s *Service) resume(ctx context.Context, result decisionmodel.Result) (deci
 			break
 		}
 	}
-	if candidate == nil {
+	if candidate == nil && value.Status != assignmentmodel.StatusConfirmed {
 		return decisionservice.Outcome{}, fmt.Errorf("existing assignment executor %q is absent from decision result", value.ExecutorID)
 	}
 	reservationValue := &reservationmodel.Reservation{
@@ -129,6 +139,27 @@ func (s *Service) resume(ctx context.Context, result decisionmodel.Result) (deci
 		Weight: value.OrderWeight, Status: reservationmodel.StatusPending,
 	}
 	return decisionservice.Outcome{Assignment: value, Reservation: reservationValue, Candidate: candidate}, nil
+}
+
+func (s *Service) reconcileConflict(ctx context.Context, outcome decisionservice.Outcome) error {
+	executorID, err := s.ais.GetAssignedExecutor(ctx, outcome.Assignment.OrderID)
+	if err != nil {
+		return fmt.Errorf("read conflicting AIS assignment: %w", err)
+	}
+	if err := s.reservations.Cancel(ctx, *outcome.Reservation); err != nil && !errors.Is(err, repository.ErrReservationState) {
+		return fmt.Errorf("cancel conflicting local reservation: %w", err)
+	}
+	confirmedAt := time.Now().UTC()
+	if err := s.assignments.ReconcileConfirmed(ctx, outcome.Assignment.ID, executorID, confirmedAt); err != nil {
+		return fmt.Errorf("reconcile conflicting assignment in postgres: %w", err)
+	}
+	reconciled := *outcome.Reservation
+	reconciled.ExecutorID = executorID
+	reconciled.Status = reservationmodel.StatusPending
+	if err := s.reservations.Confirm(ctx, reconciled, confirmedAt); err != nil {
+		return fmt.Errorf("reconcile conflicting assignment in redis: %w", err)
+	}
+	return nil
 }
 
 func (s *Service) sendWithRetry(ctx context.Context, outcome decisionservice.Outcome) (ais.AssignmentResponse, error) {
@@ -140,7 +171,7 @@ func (s *Service) sendWithRetry(ctx context.Context, outcome decisionservice.Out
 	}
 	var lastErr error
 	for attempt := 0; attempt <= len(s.delays); attempt++ {
-		if err := s.reservations.Refresh(ctx, outcome.Reservation); err != nil {
+		if err := s.ensureReservation(ctx, outcome.Reservation); err != nil {
 			return ais.AssignmentResponse{}, fmt.Errorf("refresh reservation before AIS request: %w", err)
 		}
 		response, err := s.ais.Assign(ctx, request)
@@ -156,6 +187,24 @@ func (s *Service) sendWithRetry(ctx context.Context, outcome decisionservice.Out
 		}
 	}
 	return ais.AssignmentResponse{}, lastErr
+}
+
+func (s *Service) ensureReservation(ctx context.Context, value *reservationmodel.Reservation) error {
+	err := s.reservations.Refresh(ctx, value)
+	if err == nil {
+		return nil
+	}
+	if !errors.Is(err, repository.ErrReservationState) {
+		return err
+	}
+	restored, restoreErr := s.reservations.TryReserve(ctx, value)
+	if restoreErr != nil {
+		return fmt.Errorf("restore reservation %q: %w", value.ID, restoreErr)
+	}
+	if !restored {
+		return fmt.Errorf("restore reservation %q: executor is unavailable", value.ID)
+	}
+	return nil
 }
 
 func retryable(err error) bool {

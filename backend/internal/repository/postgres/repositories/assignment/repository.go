@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	assignmentmodel "request-ranging/executor-balancer/internal/models/assignment"
 	"request-ranging/executor-balancer/internal/repository"
@@ -54,6 +55,21 @@ func (r *Repository) SetStatus(ctx context.Context, id string, status assignment
 	}
 	if affected == 0 {
 		return fmt.Errorf("set assignment %q status: %w", id, repository.ErrNotFound)
+	}
+	return nil
+}
+
+func (r *Repository) ReconcileConfirmed(ctx context.Context, id, executorID string, confirmedAt time.Time) error {
+	result, err := r.database.ExecContext(ctx, reconcileConfirmedQuery, id, executorID, confirmedAt)
+	if err != nil {
+		return fmt.Errorf("reconcile assignment %q: %w", id, err)
+	}
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("read reconcile assignment result: %w", err)
+	}
+	if affected == 0 {
+		return fmt.Errorf("reconcile assignment %q: %w", id, repository.ErrNotFound)
 	}
 	return nil
 }

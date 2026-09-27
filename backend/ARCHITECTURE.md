@@ -365,6 +365,8 @@ Executor Balancer не должен применять событие, если 
 
 PostgreSQL хранит всех исполнителей, Redis — только активных и их текущее runtime-состояние. При запуске выполняется полная синхронизация активных исполнителей, затем изменения активности и параметров приходят через Kafka `Executor, Requests parameters`.
 
+Если Redis был потерян, подтверждённая нагрузка, количество активных заявок, `processed_today` и время последнего назначения восстанавливаются из PostgreSQL по сохранённым заявкам и назначениям. Существующее runtime-состояние Redis при старте второго экземпляра не перезаписывается. Незавершённая pending-резервация восстанавливается при повторной доставке Kafka-сообщения. `processed_today` сбрасывается в `00:00 UTC`.
+
 В Redis для активного исполнителя хранятся:
 
 ```text
@@ -411,6 +413,7 @@ last_assignment_at
 | `processed_today` | integer не меньше 0 | да | количество обработанных сегодня заявок |
 | `last_assignment_at` | datetime или null | да | время последнего назначения |
 | `version` | integer больше 0 | да | версия данных |
+| `skills` | array of string | да | навыки исполнителя |
 | `attributes.min_accept_sum` | integer | нет | минимальная сумма |
 | `attributes.max_accept_sum` | integer | нет | максимальная сумма |
 | `attributes.order_types` | array of string | нет | допустимые типы заявок |
@@ -513,18 +516,14 @@ Go проверяет тип и версию события, непустой с
 ## 13. Формула нагрузки
 
 ```text
-order_weight = complexity
-
-base_capacity = median(completed_order_weight за последние 30 дней)
-capacity = base_capacity × schedule_availability
-
-для нового исполнителя base_capacity = 1.0
+order_weight = weight из события AIS
+capacity = capacity из события AIS
 
 current_load = active_weight + pending_weight
 effective_load = current_load / capacity
 ```
 
-Расчёт и сортировка выполняются Decision Engine. Go хранит `capacity` и runtime-нагрузку в Redis и атомарно обновляет их при reservation, подтверждении, отмене и завершении заявки.
+Расчёт `effective_load` и сортировка выполняются Decision Engine. Go использует готовые `weight` и `capacity`, хранит runtime-нагрузку в Redis и атомарно обновляет её при reservation, подтверждении, отмене и завершении заявки.
 
 ## 14. Владение данными
 

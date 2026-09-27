@@ -22,3 +22,8 @@ type ErrorResponse struct {
 	Message   string `json:"message"`
 	Retryable bool   `json:"retryable"`
 }
+
+type OrderResponse struct {
+	OrderID            string  `json:"order_id"`
+	AssignedExecutorID *string `json:"assigned_executor_id"`
+}

@@ -10,6 +10,7 @@ import (
 	assignmentmodel "request-ranging/executor-balancer/internal/models/assignment"
 	decisionmodel "request-ranging/executor-balancer/internal/models/decision"
 	reservationmodel "request-ranging/executor-balancer/internal/models/reservation"
+	"request-ranging/executor-balancer/internal/repository"
 	decisionservice "request-ranging/executor-balancer/internal/services/decision"
 )
 
@@ -31,8 +32,9 @@ type statusChange struct {
 }
 
 type fakeAssignments struct {
-	changes []statusChange
-	latest  *assignmentmodel.Assignment
+	changes              []statusChange
+	latest               *assignmentmodel.Assignment
+	reconciledExecutorID string
 }
 
 func (f *fakeAssignments) GetLatestByOrderID(context.Context, string) (*assignmentmodel.Assignment, error) {
@@ -44,15 +46,41 @@ func (f *fakeAssignments) SetStatus(_ context.Context, id string, status assignm
 	return nil
 }
 
+func (f *fakeAssignments) ReconcileConfirmed(_ context.Context, _ string, executorID string, _ time.Time) error {
+	f.reconciledExecutorID = executorID
+	return nil
+}
+
 type fakeReservations struct {
-	refreshed int
-	confirmed int
-	cancelled int
+	refreshed  int
+	confirmed  int
+	cancelled  int
+	reserved   int
+	refreshErr error
+}
+
+func (f *fakeReservations) TryReserve(_ context.Context, _ *reservationmodel.Reservation) (bool, error) {
+	f.reserved++
+	return true, nil
 }
 
 func (f *fakeReservations) Refresh(_ context.Context, _ *reservationmodel.Reservation) error {
 	f.refreshed++
-	return nil
+	return f.refreshErr
+}
+
+func TestProcessDecisionRestoresReservationAfterRedisLoss(t *testing.T) {
+	decisions := &fakeDecisions{outcomes: []decisionservice.Outcome{testOutcome(1)}}
+	assignments := &fakeAssignments{}
+	reservations := &fakeReservations{refreshErr: repository.ErrReservationState}
+	aisClient := &fakeAIS{results: []aisResult{{response: confirmedResponse(1)}}}
+	service := NewService(decisions, assignments, reservations, aisClient)
+	if err := service.ProcessDecision(context.Background(), decisionmodel.Result{}); err != nil {
+		t.Fatalf("ProcessDecision() error = %v", err)
+	}
+	if reservations.reserved != 1 || reservations.confirmed != 1 {
+		t.Fatalf("reservation was not restored: %+v", reservations)
+	}
 }
 func (f *fakeReservations) Confirm(_ context.Context, _ reservationmodel.Reservation, _ time.Time) error {
 	f.confirmed++
@@ -68,12 +96,19 @@ type aisResult struct {
 	err      error
 }
 
-type fakeAIS struct{ results []aisResult }
+type fakeAIS struct {
+	results            []aisResult
+	assignedExecutorID string
+}
 
 func (f *fakeAIS) Assign(context.Context, ais.AssignmentRequest) (ais.AssignmentResponse, error) {
 	value := f.results[0]
 	f.results = f.results[1:]
 	return value.response, value.err
+}
+
+func (f *fakeAIS) GetAssignedExecutor(context.Context, string) (string, error) {
+	return f.assignedExecutorID, nil
 }
 
 func TestProcessDecisionRetriesTemporaryAISFailure(t *testing.T) {
@@ -112,6 +147,23 @@ func TestProcessDecisionTriesNextCandidateAfter422(t *testing.T) {
 	}
 	if reservations.cancelled != 1 || reservations.confirmed != 1 || assignments.changes[0].status != assignmentmodel.StatusCancelled {
 		t.Fatalf("unexpected workflow state: reservations=%+v changes=%+v", reservations, assignments.changes)
+	}
+}
+
+func TestProcessDecisionReconcilesConflict(t *testing.T) {
+	decisions := &fakeDecisions{outcomes: []decisionservice.Outcome{testOutcome(1)}}
+	assignments := &fakeAssignments{}
+	reservations := &fakeReservations{}
+	aisClient := &fakeAIS{
+		results:            []aisResult{{err: &ais.APIError{StatusCode: http.StatusConflict}}},
+		assignedExecutorID: "executor-2",
+	}
+	service := NewService(decisions, assignments, reservations, aisClient)
+	if err := service.ProcessDecision(context.Background(), decisionmodel.Result{}); err != nil {
+		t.Fatalf("ProcessDecision() error = %v", err)
+	}
+	if assignments.reconciledExecutorID != "executor-2" || reservations.cancelled != 1 || reservations.confirmed != 1 {
+		t.Fatalf("conflict was not reconciled: assignments=%+v reservations=%+v", assignments, reservations)
 	}
 }
 

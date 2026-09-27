@@ -235,6 +235,7 @@ order-010000
   "capacity": 1.5,
   "daily_limit": 100,
   "version": 3,
+  "skills": ["ContractLaw", "Negotiations", "English_C1"],
   "attributes": {
     "min_accept_sum": 0,
     "max_accept_sum": 1000000,
@@ -255,6 +256,7 @@ order-010000
 | `capacity` | number > 0 | да | текущая пропускная способность, предоставляемая AIS |
 | `daily_limit` | integer или null | нет | временно игнорируется Executor Balancer |
 | `version` | integer > 0 | да | версия состояния исполнителя |
+| `skills` | array of string | да | навыки исполнителя; передаются отдельным полем верхнего уровня |
 | `attributes` | object | да | параметры допустимых заявок |
 
 Для первой версии `capacity` приходит готовой из AIS. Executor Balancer не рассчитывает медиану, график доступности или другое значение capacity. Он сохраняет полученное значение в PostgreSQL и Redis.
@@ -320,6 +322,7 @@ AIS публикует ответ в `ais.executors.v1`. Kafka key равен `r
         "capacity": 1.5,
         "daily_limit": 100,
         "version": 3,
+        "skills": ["ContractLaw", "Negotiations", "English_C1"],
         "attributes": {
           "order_types": ["LEGAL_REVIEW"],
           "subjects": ["contract"],
@@ -367,6 +370,7 @@ AIS публикует ответ в `ais.executors.v1`. Kafka key равен `r
     "capacity": 1.5,
     "daily_limit": 100,
     "version": 4,
+    "skills": ["ContractLaw", "Negotiations", "English_C1"],
     "attributes": {
       "order_types": ["LEGAL_REVIEW"],
       "subjects": ["contract"],
@@ -379,7 +383,7 @@ AIS публикует ответ в `ais.executors.v1`. Kafka key равен `r
 
 Правила Executor Balancer:
 
-- новая версия сохраняется в PostgreSQL;
+- новая версия и `skills` сохраняются в PostgreSQL;
 - старая или равная версия игнорируется;
 - активный исполнитель добавляется или обновляется в Redis;
 - деактивированный исполнитель удаляется из Redis;

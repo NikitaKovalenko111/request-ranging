@@ -76,15 +76,23 @@ func writeActive(ctx context.Context, pipe redisclient.Pipeliner, key string, va
 		lastAssignmentAt = value.LastAssignmentAt.UTC().Format(time.RFC3339Nano)
 	}
 	pipe.HSet(ctx, key, map[string]any{
-		"active":             boolAsInt(value.Active),
-		"capacity":           strconv.FormatFloat(value.Capacity, 'f', -1, 64),
-		"processed_today":    value.ProcessedToday,
-		"last_assignment_at": lastAssignmentAt,
-		"updated_at":         time.Now().UTC().Format(time.RFC3339Nano),
+		"active":     boolAsInt(value.Active),
+		"capacity":   strconv.FormatFloat(value.Capacity, 'f', -1, 64),
+		"updated_at": time.Now().UTC().Format(time.RFC3339Nano),
 	})
 	pipe.HSetNX(ctx, key, "current_load", strconv.FormatFloat(value.CurrentLoad, 'f', -1, 64))
 	pipe.HSetNX(ctx, key, "active_count", value.ActiveCount)
 	pipe.HSetNX(ctx, key, "pending_count", value.PendingCount)
+	pipe.HSetNX(ctx, key, "processed_today", value.ProcessedToday)
+	pipe.HSetNX(ctx, key, "last_assignment_at", lastAssignmentAt)
+}
+
+func (r *Repository) ResetProcessedToday(ctx context.Context) (int64, error) {
+	count, err := r.redis.Eval(ctx, resetProcessedTodayScript, []string{activeExecutorsKey}).Int64()
+	if err != nil {
+		return 0, fmt.Errorf("reset processed_today: %w", err)
+	}
+	return count, nil
 }
 
 func executorKey(id string) string { return "executor:" + id }
@@ -95,3 +103,15 @@ func boolAsInt(value bool) int {
 	}
 	return 0
 }
+
+const resetProcessedTodayScript = `
+local ids = redis.call('SMEMBERS', KEYS[1])
+local reset = 0
+for _, id in ipairs(ids) do
+    local key = 'executor:' .. id
+    if redis.call('EXISTS', key) == 1 then
+        redis.call('HSET', key, 'processed_today', 0)
+        reset = reset + 1
+    end
+end
+return reset`

@@ -55,7 +55,7 @@ func (s *Service) Apply(
 	}
 	value := &executormodel.Executor{
 		ID: payload.ID, Version: payload.Version, Active: payload.Active,
-		Capacity: payload.Capacity, Attributes: payload.Attributes,
+		Capacity: payload.Capacity, Skills: payload.Skills, Attributes: payload.Attributes,
 	}
 	current, err := s.postgres.GetByID(ctx, payload.ID)
 	switch {

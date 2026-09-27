@@ -48,3 +48,21 @@ func TestAssignReturnsTypedAPIError(t *testing.T) {
 		t.Fatalf("Assign() error = %#v, want retryable APIError", err)
 	}
 }
+
+func TestGetAssignedExecutor(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.Method != http.MethodGet || request.URL.Path != "/api/v1/orders/order-1" {
+			t.Fatalf("unexpected request: %s %s", request.Method, request.URL.Path)
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		_, _ = writer.Write([]byte(`{
+			"order_id":"order-1","status":"processed","assigned_executor_id":"executor-2"
+		}`))
+	}))
+	defer server.Close()
+	client, _ := New(server.URL, time.Second)
+	executorID, err := client.GetAssignedExecutor(context.Background(), "order-1")
+	if err != nil || executorID != "executor-2" {
+		t.Fatalf("GetAssignedExecutor() = (%q, %v)", executorID, err)
+	}
+}

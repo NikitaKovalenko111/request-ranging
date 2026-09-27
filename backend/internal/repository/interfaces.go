@@ -15,8 +15,9 @@ import (
 )
 
 var (
-	ErrNotFound        = errors.New("entity not found")
-	ErrAlreadyReserved = errors.New("order already has a reservation")
+	ErrNotFound         = errors.New("entity not found")
+	ErrAlreadyReserved  = errors.New("order already has a reservation")
+	ErrReservationState = errors.New("reservation has unexpected state")
 )
 
 type OrderRepository interface {
@@ -44,6 +45,7 @@ type AssignmentRepository interface {
 	GetByID(ctx context.Context, id string) (*assignment.Assignment, error)
 	GetLatestByOrderID(ctx context.Context, orderID string) (*assignment.Assignment, error)
 	SetStatus(ctx context.Context, id string, status assignment.Status, errorMessage *string) error
+	ReconcileConfirmed(ctx context.Context, id, executorID string, confirmedAt time.Time) error
 }
 
 type DecisionTraceRepository interface {

@@ -11,6 +11,7 @@ type Executor struct {
 	ActiveCount      int
 	PendingCount     int
 	ProcessedToday   int
+	Skills           []string
 	Attributes       map[string]any
 	LastAssignmentAt *time.Time
 	CreatedAt        time.Time

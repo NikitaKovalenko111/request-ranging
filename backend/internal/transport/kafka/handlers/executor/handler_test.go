@@ -24,12 +24,13 @@ func TestHandleExecutorUpdatedAllowsIgnoredDailyLimit(t *testing.T) {
 		"event_id":"event-1","event_type":"ExecutorUpdated","event_version":1,
 		"occurred_at":"2026-09-27T10:00:00Z","source":"ais-simulator",
 		"payload":{"executor_id":"executor-1","active":true,"capacity":1.5,
-		"daily_limit":100,"version":2,"attributes":{"order_types":["LEGAL_REVIEW"]}}
+		"daily_limit":100,"version":2,"skills":["Go","PostgreSQL"],
+		"attributes":{"order_types":["LEGAL_REVIEW"]}}
 	}`)
 	if err := handler.Handle(context.Background(), payload); err != nil {
 		t.Fatalf("Handle() error = %v", err)
 	}
-	if processor.payload == nil || processor.payload.ID != "executor-1" || processor.payload.DailyLimit == nil {
+	if processor.payload == nil || processor.payload.ID != "executor-1" || processor.payload.DailyLimit == nil || len(processor.payload.Skills) != 2 {
 		t.Fatalf("payload = %+v", processor.payload)
 	}
 }

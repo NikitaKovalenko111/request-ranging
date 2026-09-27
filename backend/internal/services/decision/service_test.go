@@ -123,6 +123,20 @@ func TestProcessRejectsUnknownExecutor(t *testing.T) {
 	}
 }
 
+func TestProcessPersistsTraceWhenNoCandidateIsAvailable(t *testing.T) {
+	traces := &fakeTraces{}
+	reservations := &fakeReservations{results: []bool{false, false}}
+	service := newTestService(&fakeDecisions{}, reservations)
+	service.traces = traces
+	_, err := service.Process(context.Background(), validDecision())
+	if !errors.Is(err, ErrNoCandidateReserved) {
+		t.Fatalf("Process() error = %v, want ErrNoCandidateReserved", err)
+	}
+	if traces.trace == nil || traces.trace.AssignmentID != nil {
+		t.Fatalf("trace = %+v, want unassigned decision trace", traces.trace)
+	}
+}
+
 func newTestService(decisions *fakeDecisions, reservations *fakeReservations) *Service {
 	active := &executormodel.Executor{ID: "executor-1", Active: true, Capacity: 1}
 	active2 := &executormodel.Executor{ID: "executor-2", Active: true, Capacity: 1}

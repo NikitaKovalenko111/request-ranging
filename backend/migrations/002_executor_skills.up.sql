@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE executors
+    ADD COLUMN IF NOT EXISTS skills JSONB NOT NULL DEFAULT '[]'::jsonb;
+
+COMMIT;

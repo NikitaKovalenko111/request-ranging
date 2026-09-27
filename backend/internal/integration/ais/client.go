@@ -85,3 +85,43 @@ func (c *Client) Assign(ctx context.Context, value AssignmentRequest) (Assignmen
 	}
 	return result, nil
 }
+
+func (c *Client) GetAssignedExecutor(ctx context.Context, orderID string) (string, error) {
+	if strings.TrimSpace(orderID) == "" {
+		return "", fmt.Errorf("order ID is required")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		c.baseURL+"/api/v1/orders/"+url.PathEscape(orderID),
+		nil,
+	)
+	if err != nil {
+		return "", fmt.Errorf("create AIS order request: %w", err)
+	}
+	response, err := c.http.Do(request)
+	if err != nil {
+		return "", fmt.Errorf("get AIS order: %w", err)
+	}
+	defer response.Body.Close()
+	limited := io.LimitReader(response.Body, 1<<20)
+	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+		var payload ErrorResponse
+		_ = json.NewDecoder(limited).Decode(&payload)
+		return "", &APIError{
+			StatusCode: response.StatusCode, Code: payload.Code, Message: payload.Message,
+			Retryable: payload.Retryable || response.StatusCode >= http.StatusInternalServerError,
+		}
+	}
+	var result OrderResponse
+	if err := json.NewDecoder(limited).Decode(&result); err != nil {
+		return "", fmt.Errorf("decode AIS order response: %w", err)
+	}
+	if result.OrderID != orderID {
+		return "", fmt.Errorf("AIS order response does not match request")
+	}
+	if result.AssignedExecutorID == nil || strings.TrimSpace(*result.AssignedExecutorID) == "" {
+		return "", fmt.Errorf("AIS order %q has no assigned executor", orderID)
+	}
+	return *result.AssignedExecutorID, nil
+}

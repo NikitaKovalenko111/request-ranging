@@ -67,7 +67,18 @@ func (c *Client) Consume(ctx context.Context, handlers map[string]MessageHandler
 			if !ok {
 				return fmt.Errorf("no handler configured for Kafka topic %q", record.Topic)
 			}
-			if err := handler.Handle(ctx, record.Value); err != nil {
+			backoff := 250 * time.Millisecond
+			for {
+				err := handler.Handle(ctx, record.Value)
+				if err == nil {
+					if commitErr := c.client.CommitRecords(ctx, record); commitErr != nil {
+						return fmt.Errorf("commit Kafka record topic=%q partition=%d offset=%d: %w",
+							record.Topic, record.Partition, record.Offset, commitErr,
+						)
+					}
+					break
+				}
+
 				permanent := new(PermanentError)
 				if errors.As(err, &permanent) {
 					if dlqErr := c.sendDeadLetter(ctx, deadLetterTopic, record, err); dlqErr != nil {
@@ -76,18 +87,31 @@ func (c *Client) Consume(ctx context.Context, handlers map[string]MessageHandler
 					if commitErr := c.client.CommitRecords(ctx, record); commitErr != nil {
 						return fmt.Errorf("commit dead-lettered Kafka record: %w", commitErr)
 					}
-					continue
+					break
 				}
-				return fmt.Errorf("handle Kafka record topic=%q partition=%d offset=%d: %w",
-					record.Topic, record.Partition, record.Offset, err,
-				)
-			}
-			if err := c.client.CommitRecords(ctx, record); err != nil {
-				return fmt.Errorf("commit Kafka record topic=%q partition=%d offset=%d: %w",
-					record.Topic, record.Partition, record.Offset, err,
-				)
+
+				if err := waitForRetry(ctx, backoff); err != nil {
+					return nil
+				}
+				if backoff < 5*time.Second {
+					backoff *= 2
+					if backoff > 5*time.Second {
+						backoff = 5 * time.Second
+					}
+				}
 			}
 		}
+	}
+}
+
+func waitForRetry(ctx context.Context, delay time.Duration) error {
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
 	}
 }
 

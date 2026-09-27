@@ -82,9 +82,16 @@ func NewService(
 }
 
 func (s *Service) Process(ctx context.Context, result decisionmodel.Result) (Outcome, error) {
+	return s.ProcessFrom(ctx, result, 1)
+}
+
+func (s *Service) ProcessFrom(ctx context.Context, result decisionmodel.Result, minimumRank int) (Outcome, error) {
 	startedAt := s.now()
 	if err := result.Validate(); err != nil {
 		return Outcome{}, err
+	}
+	if minimumRank < 1 {
+		return Outcome{}, fmt.Errorf("minimum rank must be positive")
 	}
 	orderID := result.OrderID
 	orderValue, err := s.orders.GetByID(ctx, orderID)
@@ -103,6 +110,9 @@ func (s *Service) Process(ctx context.Context, result decisionmodel.Result) (Out
 
 	for index := range result.BalancedCandidates {
 		candidate := result.BalancedCandidates[index]
+		if candidate.Rank < minimumRank {
+			continue
+		}
 		executorValue, err := s.executors.GetByID(ctx, candidate.ExecutorID)
 		if err != nil {
 			if errors.Is(err, repository.ErrNotFound) {

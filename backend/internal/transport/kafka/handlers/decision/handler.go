@@ -8,6 +8,7 @@ import (
 	"io"
 
 	decisionmodel "request-ranging/executor-balancer/internal/models/decision"
+	kafkatransport "request-ranging/executor-balancer/internal/transport/kafka"
 )
 
 type Handler struct {
@@ -23,13 +24,13 @@ func (h *Handler) Handle(ctx context.Context, payload []byte) error {
 	decoder.DisallowUnknownFields()
 	var result decisionmodel.Result
 	if err := decoder.Decode(&result); err != nil {
-		return fmt.Errorf("decode ExecutorDecisionCompleted: %w", err)
+		return kafkatransport.Permanent(fmt.Errorf("decode ExecutorDecisionCompleted: %w", err))
 	}
 	if err := ensureJSONEnded(decoder); err != nil {
-		return err
+		return kafkatransport.Permanent(err)
 	}
 	if err := result.Validate(); err != nil {
-		return err
+		return kafkatransport.Permanent(err)
 	}
 	if err := h.process(ctx, result); err != nil {
 		return fmt.Errorf("process ExecutorDecisionCompleted for order %q: %w", result.OrderID, err)

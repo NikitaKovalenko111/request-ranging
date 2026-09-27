@@ -26,6 +26,12 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Kafka.DecisionResultTopic != "decision.result.v1" {
 		t.Fatalf("Kafka.DecisionResultTopic = %q, want decision.result.v1", cfg.Kafka.DecisionResultTopic)
 	}
+	if cfg.Kafka.OrderTopic != "ais.orders.v1" || cfg.Kafka.ExecutorTopic != "ais.executors.v1" {
+		t.Fatalf("unexpected AIS topics: order=%q executor=%q", cfg.Kafka.OrderTopic, cfg.Kafka.ExecutorTopic)
+	}
+	if cfg.Kafka.DeadLetterTopic != "executor-balancer.dead-letter.v1" {
+		t.Fatalf("Kafka.DeadLetterTopic = %q", cfg.Kafka.DeadLetterTopic)
+	}
 }
 
 func TestLoadRejectsInvalidDuration(t *testing.T) {
@@ -52,7 +58,8 @@ func clearEnvironment(t *testing.T) {
 	t.Helper()
 	keys := []string{
 		"APP_HTTP_ADDR", "LOG_LEVEL", "POSTGRES_DSN", "REDIS_ADDR",
-		"KAFKA_BROKERS", "KAFKA_CONSUMER_GROUP", "KAFKA_DECISION_RESULT_TOPIC", "AIS_BASE_URL", "AIS_REQUEST_TIMEOUT",
+		"KAFKA_BROKERS", "KAFKA_CONSUMER_GROUP", "KAFKA_ORDER_TOPIC", "KAFKA_EXECUTOR_TOPIC",
+		"KAFKA_DECISION_RESULT_TOPIC", "KAFKA_DEAD_LETTER_TOPIC", "AIS_BASE_URL", "AIS_REQUEST_TIMEOUT",
 		"RESERVATION_TTL", "SHUTDOWN_TIMEOUT", "DEPENDENCY_CHECK_TIMEOUT",
 		"HTTP_READ_HEADER_TIMEOUT", "HTTP_READ_TIMEOUT", "HTTP_WRITE_TIMEOUT", "HTTP_IDLE_TIMEOUT",
 	}

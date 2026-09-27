@@ -15,7 +15,7 @@ func TestTryStartDuplicate(t *testing.T) {
 		t.Fatalf("sqlmock.New() error = %v", err)
 	}
 	defer database.Close()
-	mock.ExpectExec(`(?s)INSERT INTO processed_events.*ON CONFLICT \(event_id\) DO NOTHING`).
+	mock.ExpectExec(`(?s)INSERT INTO processed_events.*ON CONFLICT \(event_id\) DO UPDATE.*processed_at IS NULL`).
 		WithArgs("event-1", "OrderCreated", nil).
 		WillReturnResult(sqlmock.NewResult(0, 0))
 

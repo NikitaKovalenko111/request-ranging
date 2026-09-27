@@ -55,13 +55,29 @@ func TestTryReserveOrderAlreadyReserved(t *testing.T) {
 }
 
 func TestConfirmAndCancel(t *testing.T) {
-	evaluator := &fakeEvaluator{values: []any{int64(1), int64(1)}}
+	evaluator := &fakeEvaluator{values: []any{int64(1), int64(1), int64(1)}}
 	store := New(evaluator, 30*time.Second)
 	value := reservationmodel.Reservation{ID: "reservation-1", OrderID: "42", ExecutorID: "7", Weight: 0.7}
+	if err := store.Refresh(context.Background(), &value); err != nil {
+		t.Fatalf("Refresh() error = %v", err)
+	}
 	if err := store.Confirm(context.Background(), value, time.Now()); err != nil {
 		t.Fatalf("Confirm() error = %v", err)
 	}
 	if err := store.Cancel(context.Background(), value); err != nil {
 		t.Fatalf("Cancel() error = %v", err)
+	}
+}
+
+func TestCompleteIsIdempotent(t *testing.T) {
+	evaluator := &fakeEvaluator{values: []any{int64(1), int64(0)}}
+	store := New(evaluator, 30*time.Second)
+	completed, err := store.Complete(context.Background(), "event-1", "executor-1", 0.7)
+	if err != nil || !completed {
+		t.Fatalf("Complete() = (%v, %v), want (true, nil)", completed, err)
+	}
+	completed, err = store.Complete(context.Background(), "event-1", "executor-1", 0.7)
+	if err != nil || completed {
+		t.Fatalf("second Complete() = (%v, %v), want (false, nil)", completed, err)
 	}
 }

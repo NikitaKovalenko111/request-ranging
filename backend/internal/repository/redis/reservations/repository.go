@@ -66,11 +66,32 @@ func (r *Repository) TryReserve(ctx context.Context, value *reservationmodel.Res
 	}
 }
 
+func (r *Repository) Refresh(ctx context.Context, value *reservationmodel.Reservation) error {
+	if value.ID == "" || value.OrderID == "" || value.ExecutorID == "" {
+		return fmt.Errorf("refresh reservation: invalid reservation")
+	}
+	now := time.Now().UTC()
+	value.ExpiresAt = now.Add(r.ttl)
+	code, err := r.redis.Eval(ctx, refreshScript, []string{
+		executorReservationKey(value.ExecutorID), orderReservationKey(value.OrderID),
+		reservationKey(value.ID), pendingReservationsKey,
+	}, value.ID, value.ExpiresAt.UnixMilli(), r.ttl.Milliseconds()).Int64()
+	if err != nil {
+		return fmt.Errorf("refresh reservation %q: %w", value.ID, err)
+	}
+	if code != 1 {
+		return fmt.Errorf("refresh reservation %q: %w", value.ID, ErrReservationState)
+	}
+	return nil
+}
+
 func (r *Repository) Confirm(ctx context.Context, value reservationmodel.Reservation, confirmedAt time.Time) error {
 	code, err := r.redis.Eval(ctx, confirmScript, []string{
 		executorKey(value.ExecutorID), executorReservationKey(value.ExecutorID),
 		orderReservationKey(value.OrderID), reservationKey(value.ID), pendingReservationsKey,
-	}, value.ID, confirmedAt.UTC().Format(time.RFC3339Nano)).Int64()
+		confirmationKey(value.ID),
+	}, value.ID, confirmedAt.UTC().Format(time.RFC3339Nano),
+		int64((30*24*time.Hour)/time.Millisecond), strconv.FormatFloat(value.Weight, 'f', -1, 64)).Int64()
 	if err != nil {
 		return fmt.Errorf("confirm reservation %q: %w", value.ID, err)
 	}
@@ -94,6 +115,19 @@ func (r *Repository) Cancel(ctx context.Context, value reservationmodel.Reservat
 	return nil
 }
 
+func (r *Repository) Complete(ctx context.Context, eventID, executorID string, weight float64) (bool, error) {
+	if eventID == "" || executorID == "" || weight <= 0 {
+		return false, fmt.Errorf("complete assignment: invalid arguments")
+	}
+	code, err := r.redis.Eval(ctx, completeScript, []string{
+		executorKey(executorID), completionKey(eventID),
+	}, strconv.FormatFloat(weight, 'f', -1, 64), int64((30*24*time.Hour)/time.Millisecond)).Int64()
+	if err != nil {
+		return false, fmt.Errorf("complete assignment for executor %q: %w", executorID, err)
+	}
+	return code == 1, nil
+}
+
 func (r *Repository) CancelExpired(ctx context.Context, now time.Time, limit int) (int64, error) {
 	if limit <= 0 {
 		limit = 100
@@ -111,6 +145,8 @@ func executorKey(id string) string            { return "executor:" + id }
 func executorReservationKey(id string) string { return "executor:reservation:" + id }
 func orderReservationKey(id string) string    { return "order:reservation:" + id }
 func reservationKey(id string) string         { return "reservation:" + id }
+func completionKey(eventID string) string     { return "completion:event:" + eventID }
+func confirmationKey(id string) string        { return "reservation:confirmed:" + id }
 
 const pendingReservationsKey = "reservations:pending"
 
@@ -144,16 +180,34 @@ redis.call('HINCRBYFLOAT', KEYS[1], 'current_load', ARGV[4])
 redis.call('ZADD', KEYS[5], ARGV[6], ARGV[1])
 return 1`
 
+const refreshScript = `
+if redis.call('HGET', KEYS[3], 'status') ~= 'pending' then return 0 end
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end
+if redis.call('GET', KEYS[2]) ~= ARGV[1] then return 0 end
+redis.call('PEXPIRE', KEYS[1], ARGV[3])
+redis.call('PEXPIRE', KEYS[2], ARGV[3])
+redis.call('HSET', KEYS[3], 'expires_at_ms', ARGV[2])
+redis.call('ZADD', KEYS[4], ARGV[2], ARGV[1])
+return 1`
+
 const confirmScript = `
-if redis.call('HGET', KEYS[4], 'status') ~= 'pending' then return 0 end
+if redis.call('EXISTS', KEYS[6]) == 1 then return 1 end
+if redis.call('EXISTS', KEYS[1]) == 0 or redis.call('HGET', KEYS[1], 'active') ~= '1' then return 0 end
+if redis.call('HGET', KEYS[4], 'status') ~= 'pending' then
+    redis.call('HINCRBY', KEYS[1], 'active_count', 1)
+    redis.call('HINCRBYFLOAT', KEYS[1], 'current_load', ARGV[4])
+    redis.call('HSET', KEYS[1], 'last_assignment_at', ARGV[2])
+    redis.call('SET', KEYS[6], '1', 'PX', ARGV[3])
+    return 1
+end
 if redis.call('GET', KEYS[2]) ~= ARGV[1] then return 0 end
 if redis.call('GET', KEYS[3]) ~= ARGV[1] then return 0 end
-if redis.call('EXISTS', KEYS[1]) == 0 or redis.call('HGET', KEYS[1], 'active') ~= '1' then return 0 end
 redis.call('HINCRBY', KEYS[1], 'pending_count', -1)
 redis.call('HINCRBY', KEYS[1], 'active_count', 1)
 redis.call('HSET', KEYS[1], 'last_assignment_at', ARGV[2])
 redis.call('DEL', KEYS[2], KEYS[3], KEYS[4])
 redis.call('ZREM', KEYS[5], ARGV[1])
+redis.call('SET', KEYS[6], '1', 'PX', ARGV[3])
 return 1`
 
 const cancelScript = `
@@ -166,6 +220,19 @@ if redis.call('EXISTS', KEYS[1]) == 1 then
 end
 redis.call('DEL', KEYS[4])
 redis.call('ZREM', KEYS[5], ARGV[1])
+return 1`
+
+const completeScript = `
+if redis.call('EXISTS', KEYS[2]) == 1 then return 0 end
+redis.call('SET', KEYS[2], '1', 'PX', ARGV[2])
+if redis.call('EXISTS', KEYS[1]) == 0 then return 1 end
+local weight = tonumber(ARGV[1])
+local active_count = tonumber(redis.call('HGET', KEYS[1], 'active_count')) or 0
+local current_load = tonumber(redis.call('HGET', KEYS[1], 'current_load')) or 0
+redis.call('HSET', KEYS[1],
+    'active_count', math.max(0, active_count - 1),
+    'current_load', math.max(0, current_load - weight))
+redis.call('HINCRBY', KEYS[1], 'processed_today', 1)
 return 1`
 
 const cancelExpiredScript = `

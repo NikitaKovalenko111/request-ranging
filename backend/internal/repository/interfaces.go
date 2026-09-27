@@ -61,8 +61,10 @@ type DecisionRepository interface {
 
 type ReservationRepository interface {
 	TryReserve(ctx context.Context, value *reservation.Reservation) (bool, error)
+	Refresh(ctx context.Context, value *reservation.Reservation) error
 	Confirm(ctx context.Context, value reservation.Reservation, confirmedAt time.Time) error
 	Cancel(ctx context.Context, value reservation.Reservation) error
+	Complete(ctx context.Context, eventID, executorID string, weight float64) (bool, error)
 	CancelExpired(ctx context.Context, now time.Time, limit int) (int64, error)
 }
 

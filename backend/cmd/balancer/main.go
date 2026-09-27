@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"request-ranging/executor-balancer/internal/config"
+	"request-ranging/executor-balancer/internal/integration/ais"
 	decisionmodel "request-ranging/executor-balancer/internal/models/decision"
 	"request-ranging/executor-balancer/internal/package/logger"
 	"request-ranging/executor-balancer/internal/repository/postgres"
@@ -19,12 +20,17 @@ import (
 	redisstorage "request-ranging/executor-balancer/internal/repository/redis"
 	redisexecutors "request-ranging/executor-balancer/internal/repository/redis/executors"
 	redisreservations "request-ranging/executor-balancer/internal/repository/redis/reservations"
+	assignmentservice "request-ranging/executor-balancer/internal/services/assignment"
 	decisionservice "request-ranging/executor-balancer/internal/services/decision"
+	executorservice "request-ranging/executor-balancer/internal/services/executor"
+	orderservice "request-ranging/executor-balancer/internal/services/order"
 	systemservice "request-ranging/executor-balancer/internal/services/system"
 	httptransport "request-ranging/executor-balancer/internal/transport/http"
 	systemhandler "request-ranging/executor-balancer/internal/transport/http/handlers/system"
 	kafkatransport "request-ranging/executor-balancer/internal/transport/kafka"
 	decisionhandler "request-ranging/executor-balancer/internal/transport/kafka/handlers/decision"
+	executorhandler "request-ranging/executor-balancer/internal/transport/kafka/handlers/executor"
+	orderhandler "request-ranging/executor-balancer/internal/transport/kafka/handlers/order"
 )
 
 func main() {
@@ -70,6 +76,14 @@ func run() error {
 		return fmt.Errorf("restore active executors in redis: %w", err)
 	}
 	reservationRepository := redisreservations.New(redisClient.Raw(), cfg.Reservation.TTL)
+	executorEventService := executorservice.NewService(
+		repositories.Executors, redisExecutorRepository, repositories.Events,
+	)
+	orderEventService := orderservice.NewService(
+		repositories.Orders, repositories.Assignments, repositories.Events, reservationRepository,
+	)
+	executorEventHandler := executorhandler.New(executorEventService)
+	orderEventHandler := orderhandler.New(orderEventService)
 	decisionService := decisionservice.NewService(
 		repositories.Orders,
 		repositories.Executors,
@@ -78,8 +92,15 @@ func run() error {
 		repositories.DecisionTraces,
 		reservationRepository,
 	)
+	aisClient, err := ais.New(cfg.AIS.BaseURL, cfg.AIS.RequestTimeout)
+	if err != nil {
+		return fmt.Errorf("initialize AIS client: %w", err)
+	}
+	assignmentService := assignmentservice.NewService(
+		decisionService, repositories.Assignments, reservationRepository, aisClient,
+	)
 	decisionHandler := decisionhandler.New(func(ctx context.Context, result decisionmodel.Result) error {
-		outcome, processErr := decisionService.Process(ctx, result)
+		processErr := assignmentService.ProcessDecision(ctx, result)
 		if errors.Is(processErr, decisionservice.ErrOrderAlreadyAssigned) {
 			appLogger.Info("decision already processed", "order_id", result.OrderID)
 			return nil
@@ -91,13 +112,14 @@ func run() error {
 		if processErr != nil {
 			return processErr
 		}
-		appLogger.Info("executor reserved",
-			"order_id", result.OrderID,
-			"executor_id", outcome.Candidate.ExecutorID,
-			"assignment_id", outcome.Assignment.ID,
-		)
+		appLogger.Info("assignment confirmed", "order_id", result.OrderID)
 		return nil
 	})
+	kafkaHandlers := map[string]kafkatransport.MessageHandler{
+		cfg.Kafka.OrderTopic:          orderEventHandler,
+		cfg.Kafka.ExecutorTopic:       executorEventHandler,
+		cfg.Kafka.DecisionResultTopic: decisionHandler,
+	}
 
 	checkers := []systemservice.DependencyChecker{
 		postgresClient,
@@ -128,8 +150,12 @@ func run() error {
 	}()
 	kafkaErrors := make(chan error, 1)
 	go func() {
-		appLogger.Info("decision consumer started", "topic", cfg.Kafka.DecisionResultTopic)
-		kafkaErrors <- kafkaClient.Consume(signalContext, cfg.Kafka.DecisionResultTopic, decisionHandler)
+		appLogger.Info("kafka consumer started",
+			"order_topic", cfg.Kafka.OrderTopic,
+			"executor_topic", cfg.Kafka.ExecutorTopic,
+			"decision_topic", cfg.Kafka.DecisionResultTopic,
+		)
+		kafkaErrors <- kafkaClient.Consume(signalContext, kafkaHandlers, cfg.Kafka.DeadLetterTopic)
 	}()
 
 	select {

@@ -3,16 +3,21 @@ package repository
 import (
 	"context"
 	"errors"
+	"time"
 
 	"request-ranging/executor-balancer/internal/models/assignment"
 	"request-ranging/executor-balancer/internal/models/decisiontrace"
 	"request-ranging/executor-balancer/internal/models/event"
 	"request-ranging/executor-balancer/internal/models/executor"
 	"request-ranging/executor-balancer/internal/models/order"
+	"request-ranging/executor-balancer/internal/models/reservation"
 	"request-ranging/executor-balancer/internal/models/rule"
 )
 
-var ErrNotFound = errors.New("entity not found")
+var (
+	ErrNotFound        = errors.New("entity not found")
+	ErrAlreadyReserved = errors.New("order already has a reservation")
+)
 
 type OrderRepository interface {
 	Upsert(ctx context.Context, value *order.Order) error
@@ -44,6 +49,21 @@ type AssignmentRepository interface {
 type DecisionTraceRepository interface {
 	Create(ctx context.Context, value *decisiontrace.DecisionTrace) error
 	GetLatestByOrderID(ctx context.Context, orderID string) (*decisiontrace.DecisionTrace, error)
+}
+
+type DecisionRepository interface {
+	CreateAssignmentWithTrace(
+		ctx context.Context,
+		assignment *assignment.Assignment,
+		trace *decisiontrace.DecisionTrace,
+	) error
+}
+
+type ReservationRepository interface {
+	TryReserve(ctx context.Context, value *reservation.Reservation) (bool, error)
+	Confirm(ctx context.Context, value reservation.Reservation, confirmedAt time.Time) error
+	Cancel(ctx context.Context, value reservation.Reservation) error
+	CancelExpired(ctx context.Context, now time.Time, limit int) (int64, error)
 }
 
 type EventRepository interface {

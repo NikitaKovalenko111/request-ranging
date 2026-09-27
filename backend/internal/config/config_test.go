@@ -23,6 +23,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Reservation.TTL != 30*time.Second {
 		t.Fatalf("Reservation.TTL = %s, want 30s", cfg.Reservation.TTL)
 	}
+	if cfg.Kafka.DecisionResultTopic != "decision.result.v1" {
+		t.Fatalf("Kafka.DecisionResultTopic = %q, want decision.result.v1", cfg.Kafka.DecisionResultTopic)
+	}
 }
 
 func TestLoadRejectsInvalidDuration(t *testing.T) {
@@ -49,7 +52,7 @@ func clearEnvironment(t *testing.T) {
 	t.Helper()
 	keys := []string{
 		"APP_HTTP_ADDR", "LOG_LEVEL", "POSTGRES_DSN", "REDIS_ADDR",
-		"KAFKA_BROKERS", "KAFKA_CONSUMER_GROUP", "AIS_BASE_URL", "AIS_REQUEST_TIMEOUT",
+		"KAFKA_BROKERS", "KAFKA_CONSUMER_GROUP", "KAFKA_DECISION_RESULT_TOPIC", "AIS_BASE_URL", "AIS_REQUEST_TIMEOUT",
 		"RESERVATION_TTL", "SHUTDOWN_TIMEOUT", "DEPENDENCY_CHECK_TIMEOUT",
 		"HTTP_READ_HEADER_TIMEOUT", "HTTP_READ_TIMEOUT", "HTTP_WRITE_TIMEOUT", "HTTP_IDLE_TIMEOUT",
 	}

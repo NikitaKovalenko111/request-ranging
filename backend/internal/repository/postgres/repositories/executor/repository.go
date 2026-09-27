@@ -20,7 +20,8 @@ func (r *Repository) Upsert(ctx context.Context, value *executormodel.Executor) 
 	}
 	if _, err := r.database.ExecContext(
 		ctx, upsertQuery, value.ID, value.Version, value.Active, value.Capacity,
-		value.DailyLimit, attributes, value.LastAssignedAt,
+		value.CurrentLoad, value.ActiveCount, value.PendingCount, value.ProcessedToday,
+		attributes, value.LastAssignmentAt,
 	); err != nil {
 		return fmt.Errorf("upsert executor: %w", err)
 	}
@@ -64,10 +65,9 @@ func scan(source scanner) (*executormodel.Executor, error) {
 	var value executormodel.Executor
 	var attributes []byte
 	err := source.Scan(
-		&value.ID, &value.Version, &value.Active, &value.Capacity, &value.DailyLimit,
-		&value.DailyCount, &value.DailyCountDate, &value.ConfirmedWeight,
-		&value.PendingWeight, &value.OpenOrders, &attributes, &value.LastAssignedAt,
-		&value.CreatedAt, &value.UpdatedAt,
+		&value.ID, &value.Version, &value.Active, &value.Capacity, &value.CurrentLoad,
+		&value.ActiveCount, &value.PendingCount, &value.ProcessedToday, &attributes,
+		&value.LastAssignmentAt, &value.CreatedAt, &value.UpdatedAt,
 	)
 	if err != nil {
 		return nil, err

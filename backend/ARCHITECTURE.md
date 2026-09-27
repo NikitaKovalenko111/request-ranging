@@ -2,37 +2,29 @@
 
 ## 1. Назначение сервиса
 
-Executor Balancer принимает из сервиса симуляции сведения о заявках и исполнителях, определяет подходящего исполнителя, безопасно фиксирует назначение и отправляет результат обратно в сервис симуляции.
+Go-сервис принимает готовый ранжированный список исполнителей от Decision Engine, обеспечивает целостность, атомарно резервирует одного из кандидатов, сохраняет историю и отправляет назначение обратно в AIS Simulator.
 
 Основной сценарий:
 
 ```text
-AIS Simulator
-    ↓ Kafka
-Executor Balancer
-    ↓
-Проверка повторной обработки
-    ↓
-Сохранение заявки и получение исполнителей
-    ↓
-Parent Handler
-    ↓
-Rule Engine
-    ↓
-Balancer
-    ↓
-Redis Reservation
-    ↓
-Создание Assignment
-    ↓ HTTP
-AIS Simulator
-    ↓
-Подтверждение или ошибка
-    ↓
-PostgreSQL и Decision Trace
+AIS Simulator → Requests Kafka → Decision Engine
+                                  ↓
+                    Rule Engine / Feature Extractor
+                                  ↓
+                         ML Ranker / Balancer
+                                  ↓
+                       Decision.Result Kafka
+                                  ↓
+                             Go-сервис
+                                  ↓
+              проверка целостности и Redis Reservation
+                                  ↓
+                  PostgreSQL Assignment + Decision Trace
+                                  ↓ HTTP
+                            AIS Simulator
 ```
 
-Executor Balancer реализуется как одно Go приложение. Rule Engine, Balancer, Reservation и обработчики событий являются внутренними частями приложения, а не отдельными микросервисами.
+Rule Engine, Feature Extractor, ML Ranker и Balancer находятся внутри Python Decision Engine. Go-сервис не повторяет их расчёты и использует порядок `balanced_candidates`, полученный из `ExecutorDecisionCompleted`.
 
 ## 2. Структура проекта
 
@@ -66,6 +58,9 @@ backend/
 │   │   │   └── model.go
 │   │   ├── reservation/
 │   │   │   └── model.go
+│   │   ├── decision/
+│   │   │   ├── result.go
+│   │   │   └── result_test.go
 │   │   ├── decisiontrace/
 │   │   │   └── model.go
 │   │   └── event/
@@ -75,7 +70,7 @@ backend/
 │   │   ├── system/
 │   │   │   ├── service.go
 │   │   │   └── service_test.go
-│   │   ├── distribution/
+│   │   ├── decision/
 │   │   │   ├── service.go
 │   │   │   └── service_test.go
 │   │   ├── order/
@@ -84,14 +79,6 @@ backend/
 │   │   ├── assignment/
 │   │   ├── reservation/
 │   │   └── dashboard/
-│   │
-│   ├── distribution/
-│   │   ├── parent_handler.go
-│   │   ├── rule_engine.go
-│   │   ├── operators.go
-│   │   ├── balancer.go
-│   │   ├── load_calculator.go
-│   │   └── trace_builder.go
 │   │
 │   ├── repository/
 │   │   ├── interfaces.go
@@ -121,13 +108,21 @@ backend/
 │   │   │       │   ├── queries.go
 │   │   │       │   ├── repository.go
 │   │   │       │   └── repository_test.go
+│   │   │       ├── decisionresult/
+│   │   │       │   ├── queries.go
+│   │   │       │   ├── repository.go
+│   │   │       │   └── repository_test.go
 │   │   │       └── event/
 │   │   │           ├── queries.go
 │   │   │           ├── repository.go
 │   │   │           └── repository_test.go
 │   │   └── redis/
 │   │       ├── client.go
-│   │       └── scripts.go
+│   │       ├── executors/
+│   │       │   └── repository.go
+│   │       └── reservations/
+│   │           ├── repository.go
+│   │           └── repository_test.go
 │   │
 │   ├── transport/
 │   │   ├── http/
@@ -144,9 +139,10 @@ backend/
 │   │   │       └── dashboard/
 │   │   └── kafka/
 │   │       ├── client.go
-│   │       ├── consumer.go
-│   │       ├── events.go
-│   │       └── handlers.go
+│   │       └── handlers/
+│   │           └── decision/
+│   │               ├── handler.go
+│   │               └── handler_test.go
 │   │
 │   ├── integration/
 │   │   └── ais/
@@ -187,25 +183,15 @@ backend/
 
 ### `internal/services`
 
-Сервисный слой между `transport` и `repository`. Сервисы проверяют бизнес-условия, управляют сценариями и вызывают интерфейсы репозиториев. Сложный сценарий распределения находится в `services/distribution` и последовательно вызывает получение данных, правила, балансировку, резервирование и отправку назначения.
-
-### `internal/distribution`
-
-Вычислительная логика:
-
-- проверка обязательных и динамических правил;
-- расчёт нагрузки;
-- сортировка кандидатов;
-- обработка повторной заявки;
-- построение объяснения решения.
+Сервисный слой между `transport` и `repository`. `services/decision` проверяет результат Decision Engine, последовательно пробует кандидатов по `rank`, резервирует первого доступного и атомарно сохраняет Assignment вместе с Decision Trace.
 
 ### `internal/repository`
 
 Интерфейсы доступа к данным и их реализация для PostgreSQL. Каждый PostgreSQL-репозиторий находится в отдельной папке: `queries.go` содержит SQL, `repository.go` — Go-код доступа к данным, `repository_test.go` — тесты. При необходимости рядом можно добавить `dto.go`. Остальные части приложения не выполняют SQL запросы напрямую.
 
-### `internal/reservation`
+### `internal/repository/redis`
 
-Атомарное резервирование исполнителя в Redis, подтверждение, отмена и истечение временного резервирования.
+Redis содержит только активных исполнителей и runtime-состояние. Репозиторий `reservations` атомарно создаёт, подтверждает, отменяет и очищает истёкшие резервации, изменяя `pending_count`, `active_count` и `current_load`.
 
 ### `internal/transport`
 
@@ -241,6 +227,7 @@ POSTGRES_DSN=postgres://executor_balancer:executor_balancer@postgres:5432/execut
 REDIS_ADDR=redis:6379
 KAFKA_BROKERS=kafka:9092
 KAFKA_CONSUMER_GROUP=executor-balancer-v1
+KAFKA_DECISION_RESULT_TOPIC=decision.result.v1
 AIS_BASE_URL=http://ais-simulator:8091
 AIS_REQUEST_TIMEOUT=12s
 RESERVATION_TTL=30s
@@ -250,12 +237,13 @@ RESERVATION_TTL=30s
 
 ## 5. Kafka topics
 
-Для MVP используются два входящих topic:
+Для MVP используются следующие topic:
 
 | Topic | Ключ сообщения | События |
 |---|---|---|
 | `ais.orders.v1` | `order_id` | `OrderCreated`, `OrderUpdated`, `OrderStatusChanged` |
 | `ais.executors.v1` | `executor_id` | `ExecutorCreated`, `ExecutorUpdated` |
+| `decision.result.v1` | `order_id` | `ExecutorDecisionCompleted` |
 
 Дополнительный topic для сообщений, которые не удалось обработать:
 
@@ -269,11 +257,12 @@ executor-balancer.dead-letter.v1
 - сообщения одного исполнителя отправляются с одинаковым ключом `executor_id`;
 - Kafka offset подтверждается только после успешного сохранения события;
 - повторное событие определяется по `event_id`;
+- повторный `ExecutorDecisionCompleted`, в котором заявка уже имеет pending или confirmed Assignment, не создаёт второе назначение;
 - consumer group Executor Balancer: `executor-balancer-v1`;
 - для локального демо допустимо `auto.offset.reset=earliest`;
 - автоматическое подтверждение offset необходимо отключить.
 
-## 6. Общий формат Kafka события
+## 6. Общий формат Kafka события AIS
 
 ```json
 {
@@ -295,7 +284,7 @@ executor-balancer.dead-letter.v1
 - `source` — для событий симулятора `ais-simulator`;
 - `payload` — данные конкретного события.
 
-Неизвестный `event_type` или неподдерживаемая версия не должны приводить к падению consumer. Такое сообщение записывается как ошибка и отправляется в dead-letter topic.
+Формат применяется к событиям AIS. `ExecutorDecisionCompleted` имеет отдельный плоский контракт из раздела 12. Неизвестный `event_type` или неподдерживаемая версия не должны приводить к падению consumer. Такое сообщение записывается как ошибка и отправляется в dead-letter topic.
 
 ## 7. События заявок
 
@@ -372,46 +361,22 @@ Executor Balancer не должен применять событие, если 
 | `cancelled` | временное назначение отменено |
 | `failed` | назначение завершилось ошибкой |
 
-## 9. События исполнителей
+## 9. Состояние исполнителей
 
-### `ExecutorCreated` и `ExecutorUpdated`
+PostgreSQL хранит всех исполнителей, Redis — только активных и их текущее runtime-состояние. При запуске выполняется полная синхронизация активных исполнителей, затем изменения активности и параметров приходят через Kafka `Executor, Requests parameters`.
 
-Оба события содержат полный актуальный снимок исполнителя:
+В Redis для активного исполнителя хранятся:
 
-```json
-{
-  "event_id": "3b7ea016-496c-440e-9137-3248c20561d9",
-  "event_type": "ExecutorUpdated",
-  "event_version": 1,
-  "occurred_at": "2026-09-25T12:00:00Z",
-  "source": "ais-simulator",
-  "payload": {
-    "executor_id": "executor-28",
-    "active": true,
-    "capacity": 1.5,
-    "daily_limit": 100,
-    "version": 3,
-    "attributes": {
-      "min_accept_sum": 0,
-      "max_accept_sum": 1000000,
-      "client_msp": ["small", "medium"],
-      "executor_msp": ["legal"],
-      "order_types": ["LEGAL_REVIEW", "CONSULTATION"],
-      "subjects": ["contract", "claims"],
-      "vip_allowed": true,
-      "regions": ["ural", "siberia"]
-    }
-  }
-}
+```text
+capacity
+current_load
+active_count
+pending_count
+processed_today
+last_assignment_at
 ```
 
-Правила полей:
-
-- `capacity` должна быть больше нуля;
-- `daily_limit` может быть `null`, что означает отсутствие лимита;
-- `version` увеличивается при каждом изменении;
-- текущая нагрузка не передаётся симулятором как источник истины, её считает Executor Balancer;
-- событие со старой или равной версией не должно откатывать данные исполнителя назад.
+При деактивации исполнитель удаляется из Redis, но остаётся в PostgreSQL. Обновление со старой или равной `version` не должно откатывать состояние в PostgreSQL.
 
 ## 10. Поля заявки и исполнителя
 
@@ -439,8 +404,12 @@ Executor Balancer не должен применять событие, если 
 |---|---|---|---|
 | `executor_id` | string | да | уникальный идентификатор |
 | `active` | boolean | да | доступность для распределения |
-| `capacity` | number больше 0 | да | относительная производительность |
-| `daily_limit` | integer или null | да | суточный лимит или отсутствие лимита |
+| `capacity` | number больше 0 | да | условная пропускная способность |
+| `current_load` | number не меньше 0 | да | суммарный вес активных и pending заявок |
+| `active_count` | integer не меньше 0 | да | количество активных заявок |
+| `pending_count` | integer не меньше 0 | да | количество временно зарезервированных заявок |
+| `processed_today` | integer не меньше 0 | да | количество обработанных сегодня заявок |
+| `last_assignment_at` | datetime или null | да | время последнего назначения |
 | `version` | integer больше 0 | да | версия данных |
 | `attributes.min_accept_sum` | integer | нет | минимальная сумма |
 | `attributes.max_accept_sum` | integer | нет | максимальная сумма |
@@ -513,52 +482,49 @@ AIS Simulator имитирует задержку ответа от 2 до 10 с
 
 На всех попытках используется один и тот же `assignment_id`.
 
-## 12. Правила распределения первой версии
+## 12. Результат Decision Engine
 
-В MVP должны поддерживаться операции:
+Rule Engine, Feature Extractor, ML Ranker и Balancer выполняются в Decision Engine. Go-сервис получает из Kafka готовый список:
 
-```text
-=
-!=
->
->=
-<
-<=
-IN
-NOT IN
-BETWEEN
-CONTAINS
+```json
+{
+  "event_type": "ExecutorDecisionCompleted",
+  "event_version": 1,
+  "occurred_at": "2026-09-27T10:00:00+00:00",
+  "order_id": 42,
+  "balanced_candidates": [
+    {
+      "executor_id": "7",
+      "rank": 1,
+      "ml_score": 0.82,
+      "effective_load": 0.2,
+      "capacity": 1.0,
+      "active_count": 1,
+      "pending_count": 0,
+      "processed_today": 5,
+      "last_assignment_at": "2026-09-27T09:59:00+00:00"
+    }
+  ]
+}
 ```
 
-Минимальный набор обязательных правил:
-
-1. Участвуют только активные исполнители.
-2. Суточный лимит не должен быть превышен.
-3. Сумма заявки должна входить в допустимый диапазон исполнителя, если диапазон настроен.
-4. Тип заявки должен входить в `order_types`, если список настроен.
-5. Тематика должна входить в `subjects`, если список настроен.
-6. VIP заявка может быть назначена только при `vip_allowed = true`.
-7. Регион должен входить в `regions`, если список настроен.
-8. Все активные правила являются обязательными: достаточно одного отказа, чтобы исключить исполнителя.
-
-Для повторной заявки с `parent_id` предыдущему исполнителю не проверяется только суточный лимит. Активность и остальные правила продолжают действовать.
+Go проверяет тип и версию события, положительный `order_id`, непрерывные ранги от 1, уникальность `executor_id`, конечность числовых значений и неотрицательность нагрузки и счётчиков. Затем кандидаты поочерёдно резервируются в Redis. Если `rank=1` уже занят конкурентным процессом или `current_load + order_weight` превышает его актуальный `capacity`, проверяется `rank=2`.
 
 ## 13. Формула нагрузки
 
 ```text
-effective_load =
-    (confirmed_weight + pending_weight)
-    / capacity
+order_weight = complexity
+
+base_capacity = median(completed_order_weight за последние 30 дней)
+capacity = base_capacity × schedule_availability
+
+для нового исполнителя base_capacity = 1.0
+
+current_load = active_weight + pending_weight
+effective_load = current_load / capacity
 ```
 
-Кандидаты сортируются по:
-
-1. меньшей `effective_load`;
-2. меньшему количеству открытых заявок;
-3. более старому времени последнего назначения;
-4. `executor_id` для стабильного результата.
-
-Случайный выбор не используется.
+Расчёт и сортировка выполняются Decision Engine. Go хранит `capacity` и runtime-нагрузку в Redis и атомарно обновляет их при reservation, подтверждении, отмене и завершении заявки.
 
 ## 14. Владение данными
 
@@ -572,12 +538,13 @@ AIS Simulator является источником истины для:
 Executor Balancer является источником истины для:
 
 - истории расчётов;
-- правил распределения;
 - reservation;
-- pending и confirmed нагрузки;
+- pending и active runtime-нагрузки;
 - локальных назначений;
 - Decision Trace;
 - технических метрик.
+
+Decision Engine отвечает за Rule Engine, Feature Extractor, ML Ranker, Balancer, расчёт `capacity`, `effective_load` и итоговый порядок кандидатов.
 
 Сервисы не должны напрямую читать или изменять базы данных друг друга.
 

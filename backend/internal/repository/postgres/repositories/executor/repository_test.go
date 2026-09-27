@@ -16,7 +16,7 @@ func TestUpsertUsesVersionGuard(t *testing.T) {
 	}
 	defer database.Close()
 	mock.ExpectExec(`(?s)INSERT INTO executors.*WHERE EXCLUDED.version > executors.version`).
-		WithArgs("executor-1", int64(3), true, 1.5, nil, sqlmock.AnyArg(), nil).
+		WithArgs("executor-1", int64(3), true, 1.5, 0.0, 0, 0, 0, sqlmock.AnyArg(), nil).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
 	err = New(database).Upsert(context.Background(), &executormodel.Executor{

@@ -284,3 +284,62 @@ select { min-width: 0; padding: 8px 29px 8px 9px; border: 1px solid var(--border
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* ============================================================ */
+/* Shared UI components (Alena) — Input, Select, Switch, Drawer  */
+/* Form wrappers, MultiValueInput, Dialog, Button.danger         */
+/* ============================================================ */
+
+/* --- Dialog (используется в Dialog.tsx) --- */
+.dialog-backdrop { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 100; background: rgba(15, 23, 42, .5); }
+.dialog { width: min(600px, 92vw); max-height: 90vh; overflow: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 13px; box-shadow: 0 20px 60px rgba(39, 69, 91, .25); }
+.dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.dialog-header h2 { margin: 0; font-size: 1rem; color: var(--text); }
+.dialog-body { padding: 16px; }
+
+/* --- Button: danger variant (primary/secondary/ghost уже есть) --- */
+.button.danger { background: var(--rose); color: #ffffff; }
+.button.danger:hover { background: #b93250; }
+
+/* --- Input --- */
+.input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #ffffff; color: var(--text); font: inherit; box-sizing: border-box; }
+.input:focus { outline: 3px solid rgba(15, 143, 134, .32); outline-offset: 2px; }
+.input-invalid { border-color: var(--rose); }
+.input:disabled { background: var(--surface-2); cursor: not-allowed; }
+
+/* --- Select --- */
+.select { width: 100%; padding: 8px 29px 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #ffffff; color: var(--text); font: inherit; box-sizing: border-box; }
+.select:focus { outline: 3px solid rgba(15, 143, 134, .32); outline-offset: 2px; }
+.select-invalid { border-color: var(--rose); }
+.select:disabled { background: var(--surface-2); cursor: not-allowed; }
+
+/* --- Switch --- */
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+.switch-slider { width: 36px; height: 20px; flex-shrink: 0; position: relative; border-radius: 10px; background: #cbd5e1; transition: background .15s; }
+.switch-slider::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #ffffff; transition: transform .15s; }
+.switch input:checked + .switch-slider { background: var(--teal); }
+.switch input:checked + .switch-slider::after { transform: translateX(16px); }
+.switch input:disabled + .switch-slider { opacity: .5; cursor: not-allowed; }
+.switch-label { font-size: .85rem; color: var(--text); }
+
+/* --- Drawer --- */
+.drawer-backdrop { position: fixed; inset: 0; z-index: 100; background: rgba(15, 23, 42, .5); }
+.drawer { position: absolute; top: 0; right: 0; height: 100%; width: 480px; max-width: 100vw; display: flex; flex-direction: column; background: var(--surface); border-left: 1px solid var(--border); box-shadow: -2px 0 8px rgba(0, 0, 0, .15); }
+.drawer-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.drawer-header h2 { margin: 0; font-size: 1rem; color: var(--text); }
+.drawer-body { flex: 1; overflow: auto; padding: 16px; }
+
+/* --- Form wrappers --- */
+.form-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.form-label { font-size: .8rem; font-weight: 600; color: #334155; }
+.form-hint { font-size: .72rem; color: var(--muted); }
+.form-error { font-size: .72rem; color: var(--rose); }
+
+/* --- MultiValueInput --- */
+.multi-value { display: flex; flex-direction: column; gap: 8px; }
+.multi-value-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.multi-value-item { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); color: var(--text); font-size: .8rem; }
+.multi-value-item button { padding: 0 2px; border: 0; background: none; color: var(--muted); font-size: .85rem; cursor: pointer; }
+.multi-value-item button:disabled { opacity: .4; cursor: not-allowed; }
+.multi-value-add { display: flex; gap: 8px; }

@@ -5,12 +5,18 @@ export const queryClient = new QueryClient({
     queries: {
       staleTime: 1_000,
       gcTime: 10 * 60_000,
-      retry: (failureCount, error) => {
-        if (error instanceof DOMException && error.name === 'AbortError') return false;
+      retry: (failureCount: number, error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return false;
+        }
         return failureCount < 1;
       },
       refetchOnWindowFocus: false,
     },
+    mutations: {
+      retry: 0,
+    },
   },
 });
+
 

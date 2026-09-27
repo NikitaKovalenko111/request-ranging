@@ -4,7 +4,6 @@ export interface ApiError {
   details?: Record<string, unknown>;
   fieldErrors?: Record<string, string>;
   traceId?: string;
-  status?: number;
 }
 
 export interface PaginationMeta {
@@ -18,3 +17,7 @@ export interface PaginatedResponse<T> {
   pagination: PaginationMeta;
 }
 
+export interface RequestOptions {
+  signal?: AbortSignal;
+  timeoutMs?: number;
+}

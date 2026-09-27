@@ -127,7 +127,7 @@ func newTestService(decisions *fakeDecisions, reservations *fakeReservations) *S
 	active := &executormodel.Executor{ID: "executor-1", Active: true, Capacity: 1}
 	active2 := &executormodel.Executor{ID: "executor-2", Active: true, Capacity: 1}
 	service := NewService(
-		fakeOrders{value: &ordermodel.Order{ID: "42", Status: ordermodel.StatusProcessed, Weight: 0.7}},
+		fakeOrders{value: &ordermodel.Order{ID: "order-1032", Status: ordermodel.StatusProcessed, Weight: 0.7}},
 		fakeExecutors{values: map[string]*executormodel.Executor{"executor-1": active, "executor-2": active2}},
 		fakeAssignments{}, decisions, &fakeTraces{}, reservations,
 	)
@@ -145,7 +145,7 @@ func validDecision() decisionmodel.Result {
 	now := time.Date(2026, 9, 27, 10, 0, 0, 0, time.UTC)
 	return decisionmodel.Result{
 		EventType:    decisionmodel.EventTypeExecutorDecisionCompleted,
-		EventVersion: 1, OccurredAt: now, OrderID: 42,
+		EventVersion: 1, OccurredAt: now, OrderID: "order-1032",
 		BalancedCandidates: []decisionmodel.BalancedCandidate{
 			{ExecutorID: "executor-1", Rank: 1, MLScore: 0.82, EffectiveLoad: 0.2, Capacity: 1},
 			{ExecutorID: "executor-2", Rank: 2, MLScore: 0.7, EffectiveLoad: 0.3, Capacity: 1},

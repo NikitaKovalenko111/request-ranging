@@ -32,7 +32,7 @@ func (h *Handler) Handle(ctx context.Context, payload []byte) error {
 		return err
 	}
 	if err := h.process(ctx, result); err != nil {
-		return fmt.Errorf("process ExecutorDecisionCompleted for order %d: %w", result.OrderID, err)
+		return fmt.Errorf("process ExecutorDecisionCompleted for order %q: %w", result.OrderID, err)
 	}
 	return nil
 }

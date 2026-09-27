@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 )
 
@@ -19,7 +20,7 @@ type Result struct {
 	EventType          string              `json:"event_type"`
 	EventVersion       int                 `json:"event_version"`
 	OccurredAt         time.Time           `json:"occurred_at"`
-	OrderID            int64               `json:"order_id"`
+	OrderID            string              `json:"order_id"`
 	BalancedCandidates []BalancedCandidate `json:"balanced_candidates"`
 }
 
@@ -45,8 +46,8 @@ func (r Result) Validate() error {
 	if r.OccurredAt.IsZero() {
 		return fmt.Errorf("%w: occurred_at is required", ErrInvalidResult)
 	}
-	if r.OrderID <= 0 {
-		return fmt.Errorf("%w: order_id must be positive", ErrInvalidResult)
+	if strings.TrimSpace(r.OrderID) == "" {
+		return fmt.Errorf("%w: order_id must not be empty", ErrInvalidResult)
 	}
 	if len(r.BalancedCandidates) == 0 {
 		return fmt.Errorf("%w: balanced_candidates must not be empty", ErrInvalidResult)

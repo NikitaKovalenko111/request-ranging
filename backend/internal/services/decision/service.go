@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	assignmentmodel "request-ranging/executor-balancer/internal/models/assignment"
@@ -87,7 +86,7 @@ func (s *Service) Process(ctx context.Context, result decisionmodel.Result) (Out
 	if err := result.Validate(); err != nil {
 		return Outcome{}, err
 	}
-	orderID := strconv.FormatInt(result.OrderID, 10)
+	orderID := result.OrderID
 	orderValue, err := s.orders.GetByID(ctx, orderID)
 	if err != nil {
 		return Outcome{}, fmt.Errorf("get decision order %q: %w", orderID, err)

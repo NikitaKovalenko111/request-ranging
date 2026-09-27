@@ -491,7 +491,7 @@ Rule Engine, Feature Extractor, ML Ranker и Balancer выполняются в 
   "event_type": "ExecutorDecisionCompleted",
   "event_version": 1,
   "occurred_at": "2026-09-27T10:00:00+00:00",
-  "order_id": 42,
+  "order_id": "order-1032",
   "balanced_candidates": [
     {
       "executor_id": "7",
@@ -508,7 +508,7 @@ Rule Engine, Feature Extractor, ML Ranker и Balancer выполняются в 
 }
 ```
 
-Go проверяет тип и версию события, положительный `order_id`, непрерывные ранги от 1, уникальность `executor_id`, конечность числовых значений и неотрицательность нагрузки и счётчиков. Затем кандидаты поочерёдно резервируются в Redis. Если `rank=1` уже занят конкурентным процессом или `current_load + order_weight` превышает его актуальный `capacity`, проверяется `rank=2`.
+Go проверяет тип и версию события, непустой строковый `order_id`, непрерывные ранги от 1, уникальность `executor_id`, конечность числовых значений и неотрицательность нагрузки и счётчиков. Затем кандидаты поочерёдно резервируются в Redis. Если `rank=1` уже занят конкурентным процессом или `current_load + order_weight` превышает его актуальный `capacity`, проверяется `rank=2`.
 
 ## 13. Формула нагрузки
 

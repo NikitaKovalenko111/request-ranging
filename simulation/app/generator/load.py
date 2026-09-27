@@ -111,10 +111,14 @@ class LoadGenerator:
             chunk = orders_to_insert[i : i + chunk_size]
             async with async_session_factory() as session:
                 repo = OrderRepository(session)
-                await repo.bulk_create(chunk)
-
-            for ord_dict in chunk:
-                await kafka_producer.publish_order_created(ord_dict)
+                await repo.bulk_create(chunk, auto_commit=False)
+                try:
+                    for ord_dict in chunk:
+                        await kafka_producer.publish_order_created(ord_dict)
+                    await session.commit()
+                except Exception:
+                    await session.rollback()
+                    raise
 
         elapsed = time.time() - start_time
         self.total_generated += count
@@ -252,13 +256,18 @@ class LoadGenerator:
                         parent_id = random.choice(await_ids)
                     orders_batch.append(self.generate_single_order_dict(base_idx + i, parent_id=parent_id))
 
-                # Вставка в БД и отправка в Kafka
+                # Вставка в БД и отправка в Kafka атомарно
                 async with async_session_factory() as session:
                     repo = OrderRepository(session)
-                    await repo.bulk_create(orders_batch)
-
-                for ord_item in orders_batch:
-                    await kafka_producer.publish_order_created(ord_item)
+                    await repo.bulk_create(orders_batch, auto_commit=False)
+                    try:
+                        for ord_item in orders_batch:
+                            await kafka_producer.publish_order_created(ord_item)
+                        await session.commit()
+                    except Exception as e:
+                        await session.rollback()
+                        logger.error(f"Failed to publish orders batch to Kafka, rolling back DB: {e}")
+                        raise
 
                 self.total_generated += len(orders_batch)
                 self.current_rate = round(len(orders_batch) / max(delay, 0.01), 1)

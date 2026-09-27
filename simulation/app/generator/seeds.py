@@ -404,8 +404,14 @@ async def seed_database(session: AsyncSession, seed_orders: bool = False):
                     skills=item.get("skills", []),
                     attributes=item["attributes"],
                     version=1,
+                    auto_commit=False,
                 )
-                await kafka_producer.publish_executor_created(row.to_dict())
+                try:
+                    await kafka_producer.publish_executor_created(row.to_dict())
+                    await session.commit()
+                except Exception:
+                    await session.rollback()
+                    raise
         logger.info("Executor seeding complete.")
     else:
         logger.info(f"Database already seeded with {count} executors.")
@@ -420,7 +426,14 @@ async def seed_database(session: AsyncSession, seed_orders: bool = False):
             chunk_size = 500
             for idx in range(0, len(orders_data), chunk_size):
                 chunk = orders_data[idx : idx + chunk_size]
-                await order_repo.bulk_create(chunk)
+                await order_repo.bulk_create(chunk, auto_commit=False)
+                try:
+                    for ord_dict in chunk:
+                        await kafka_producer.publish_order_created(ord_dict)
+                    await session.commit()
+                except Exception:
+                    await session.rollback()
+                    raise
             logger.info("10,000 realistic orders populated in database.")
         else:
             logger.info(f"Database already contains {order_count} orders.")

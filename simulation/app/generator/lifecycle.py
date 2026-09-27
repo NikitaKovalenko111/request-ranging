@@ -51,10 +51,14 @@ class LifecycleSimulator:
                 await asyncio.sleep(random.uniform(2.5, 4.5))
                 tick += 1
 
-                # 1. Process orders lifecycle transitions
+                # 1. Process orders lifecycle transitions (ONLY for orders assigned to an executor!)
                 async with async_session_factory() as session:
                     order_repo = OrderRepository(session)
-                    candidates = await order_repo.get_random_orders(status="processed", limit=random.randint(3, 10))
+                    candidates = await order_repo.get_random_orders(
+                        status="processed",
+                        assigned_only=True,
+                        limit=random.randint(3, 10),
+                    )
 
                 for order_row in candidates:
                     outcome = random.choices(["accept", "reject", "await"], weights=[55, 25, 20], k=1)[0]
@@ -64,41 +68,53 @@ class LifecycleSimulator:
                         updated_row, _, status_changed, prev_status, _ = await order_repo.update_order(
                             order_id=order_row.order_id,
                             new_status=outcome,
+                            auto_commit=False,
                         )
 
-                    if updated_row and status_changed:
-                        await kafka_producer.publish_order_status_changed(
-                            order_id=updated_row.order_id,
-                            previous_status=prev_status or "processed",
-                            status=updated_row.status,
-                            version=updated_row.version,
-                        )
-
-                        if outcome == "accept":
-                            self.stats["accepted"] += 1
-                        elif outcome == "reject":
-                            self.stats["rejected"] += 1
-                        elif outcome == "await":
-                            self.stats["awaiting"] += 1
-
-                            # Contract Section 7:
-                            # "await -> новая заявка со статусом processed и заполненным parent_id"
-                            child_order_dict = load_generator.generate_single_order_dict(
-                                order_idx=random.randint(100000, 999999),
-                                parent_id=updated_row.order_id,
-                            )
-                            async with async_session_factory() as session:
-                                order_repo = OrderRepository(session)
-                                child_row = await order_repo.create(
-                                    order_id=child_order_dict["order_id"],
-                                    parent_id=child_order_dict["parent_id"],
-                                    status=child_order_dict["status"],
-                                    weight=child_order_dict["weight"],
-                                    attributes=child_order_dict["attributes"],
-                                    version=1,
+                        if updated_row and status_changed:
+                            try:
+                                await kafka_producer.publish_order_status_changed(
+                                    order_id=updated_row.order_id,
+                                    previous_status=prev_status or "processed",
+                                    status=updated_row.status,
+                                    version=updated_row.version,
                                 )
-                            await kafka_producer.publish_order_created(child_row.to_dict())
-                            self.stats["rework_created"] += 1
+                                await session.commit()
+                            except Exception:
+                                await session.rollback()
+                                raise
+
+                            if outcome == "accept":
+                                self.stats["accepted"] += 1
+                            elif outcome == "reject":
+                                self.stats["rejected"] += 1
+                            elif outcome == "await":
+                                self.stats["awaiting"] += 1
+
+                                # Contract Section 7:
+                                # "await -> новая заявка со статусом processed и заполненным parent_id"
+                                child_order_dict = load_generator.generate_single_order_dict(
+                                    order_idx=random.randint(100000, 999999),
+                                    parent_id=updated_row.order_id,
+                                )
+                                async with async_session_factory() as child_session:
+                                    child_order_repo = OrderRepository(child_session)
+                                    child_row = await child_order_repo.create(
+                                        order_id=child_order_dict["order_id"],
+                                        parent_id=child_order_dict["parent_id"],
+                                        status=child_order_dict["status"],
+                                        weight=child_order_dict["weight"],
+                                        attributes=child_order_dict["attributes"],
+                                        version=1,
+                                        auto_commit=False,
+                                    )
+                                    try:
+                                        await kafka_producer.publish_order_created(child_row.to_dict())
+                                        await child_session.commit()
+                                    except Exception:
+                                        await child_session.rollback()
+                                        raise
+                                self.stats["rework_created"] += 1
 
                 # 2. Every 6 ticks (~20-25 seconds), simulate executor status/setting modifications
                 if tick % 6 == 0:
@@ -123,11 +139,17 @@ class LifecycleSimulator:
                                 executor_id=target.executor_id,
                                 active=new_active,
                                 capacity=new_capacity,
+                                auto_commit=False,
                             )
 
-                        if updated_exec:
-                            await kafka_producer.publish_executor_updated(updated_exec.to_dict())
-                            self.stats["executor_changes"] += 1
+                            if updated_exec:
+                                try:
+                                    await kafka_producer.publish_executor_updated(updated_exec.to_dict())
+                                    await session.commit()
+                                except Exception:
+                                    await session.rollback()
+                                    raise
+                                self.stats["executor_changes"] += 1
 
             except asyncio.CancelledError:
                 break

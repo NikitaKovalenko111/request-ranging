@@ -41,7 +41,7 @@ class OrderRepository:
             await self.session.flush()
         return row
 
-    async def bulk_create(self, orders: List[Dict[str, Any]]) -> List[OrderRow]:
+    async def bulk_create(self, orders: List[Dict[str, Any]], auto_commit: bool = True) -> List[OrderRow]:
         """High-performance batch insert for burst generation (e.g. 1k burst, 10k total)."""
         now = now_iso()
         rows = [
@@ -58,7 +58,10 @@ class OrderRepository:
             for o in orders
         ]
         self.session.add_all(rows)
-        await self.session.commit()
+        if auto_commit:
+            await self.session.commit()
+        else:
+            await self.session.flush()
         return rows
 
     async def list_orders(
@@ -165,8 +168,21 @@ class OrderRepository:
             await self.session.flush()
         return row
 
-    async def get_random_orders(self, status: str = "processed", limit: int = 20) -> List[OrderRow]:
-        query = select(OrderRow).where(OrderRow.status == status).order_by(func.random()).limit(limit)
+    async def get_random_orders(
+        self,
+        status: str = "processed",
+        assigned_only: bool = False,
+        limit: int = 20,
+    ) -> List[OrderRow]:
+        query = select(OrderRow).where(OrderRow.status == status)
+        if assigned_only:
+            query = query.where(
+                and_(
+                    OrderRow.assigned_executor_id.isnot(None),
+                    OrderRow.assigned_executor_id != "",
+                )
+            )
+        query = query.order_by(func.random()).limit(limit)
         res = await self.session.execute(query)
         return list(res.scalars().all())
 
@@ -214,7 +230,7 @@ class ExecutorRepository:
             await self.session.flush()
         return row
 
-    async def bulk_create(self, executors: List[Dict[str, Any]]) -> List[ExecutorRow]:
+    async def bulk_create(self, executors: List[Dict[str, Any]], auto_commit: bool = True) -> List[ExecutorRow]:
         now = now_iso()
         rows = [
             ExecutorRow(
@@ -231,7 +247,10 @@ class ExecutorRepository:
             for e in executors
         ]
         self.session.add_all(rows)
-        await self.session.commit()
+        if auto_commit:
+            await self.session.commit()
+        else:
+            await self.session.flush()
         return rows
 
     async def list_executors(

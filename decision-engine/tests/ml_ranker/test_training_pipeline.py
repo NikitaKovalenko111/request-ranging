@@ -31,13 +31,25 @@ def test_training_saves_loadable_model_and_metadata(tmp_path) -> None:
     assert config.paths.model_path.exists()
     assert config.paths.metadata_path.exists()
     assert tuple(metadata["feature_columns"]) == FEATURE_COLUMNS
+    assert metadata["model_version"] == "ranker-v2"
+    assert (
+        metadata["dataset"]["feature_source"]
+        == "synthetic_text_via_heuristic_feature_extractor"
+    )
     assert set(metadata["metrics"]) == {"heuristic", "ml"}
 
     ranker = MLRanker(config.paths.model_path, config.paths.metadata_path)
-    order = Order("O", datetime.now(UTC), complexity=0.7, urgency=0.8)
+    order = Order(
+        "O",
+        datetime.now(UTC),
+        complexity=0.7,
+        urgency=0.8,
+        estimated_effort_score=0.7,
+        keyword_count_score=0.5,
+    )
     candidates = [
-        Executor("E1", 0.8, 0.9, 0.9, 0.9, 8.0, 300),
-        Executor("E2", 0.5, 0.5, 0.7, 0.7, 20.0, 50),
+        Executor("E1", 0.8, 0.9, 0.9, 0.9, 8.0, 300, skill_match_score=0.9),
+        Executor("E2", 0.5, 0.5, 0.7, 0.7, 20.0, 50, skill_match_score=0.1),
     ]
 
     ranking = ranker.rank(order, candidates)

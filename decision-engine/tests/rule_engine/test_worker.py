@@ -86,6 +86,7 @@ def test_worker_publishes_result_before_committing_offset() -> None:
         assert topic == settings.kafka_result_topic
         assert key == b"42"
         assert result["event_id"] == "event-1"
+        assert result["order_id"] == "42"
         assert result["eligible_executor_ids"] == [101]
 
     asyncio.run(scenario())

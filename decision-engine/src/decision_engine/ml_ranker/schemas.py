@@ -16,12 +16,16 @@ class Order:
     timestamp: datetime
     complexity: float
     urgency: float
+    estimated_effort_score: float = 0.5
+    keyword_count_score: float = 0.0
 
     def __post_init__(self) -> None:
         if not self.id:
             raise ValueError("order id cannot be empty")
         _unit_interval("complexity", self.complexity)
         _unit_interval("urgency", self.urgency)
+        _unit_interval("estimated_effort_score", self.estimated_effort_score)
+        _unit_interval("keyword_count_score", self.keyword_count_score)
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,6 +37,7 @@ class Executor:
     historical_success_rate: float
     historical_avg_processing_time: float
     historical_orders_count: int
+    skill_match_score: float = 0.0
 
     def __post_init__(self) -> None:
         if not self.id:
@@ -41,6 +46,7 @@ class Executor:
         _unit_interval("speed_score", self.speed_score)
         _unit_interval("reliability_score", self.reliability_score)
         _unit_interval("historical_success_rate", self.historical_success_rate)
+        _unit_interval("skill_match_score", self.skill_match_score)
         if not isfinite(self.historical_avg_processing_time):
             raise ValueError("historical_avg_processing_time must be finite")
         if self.historical_avg_processing_time <= 0:

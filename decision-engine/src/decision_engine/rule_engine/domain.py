@@ -54,6 +54,13 @@ def _required_int(data: Mapping[str, Any], field_name: str) -> int:
     return parsed
 
 
+def _required_str(data: Mapping[str, Any], field_name: str) -> str:
+    value = str(_required(data, field_name)).strip()
+    if not value:
+        raise DomainValidationError(f"{field_name} must be a non-empty string")
+    return value
+
+
 def _as_bool(value: object, field_name: str) -> bool:
     if isinstance(value, bool):
         return value
@@ -70,7 +77,7 @@ def _as_bool(value: object, field_name: str) -> bool:
 
 @dataclass(frozen=True, slots=True)
 class Order:
-    id: int
+    id: str
     sum: int
     order_type: OrderType
     subject: UUID
@@ -82,6 +89,10 @@ class Order:
     vip: bool = False
     text: str | None = None
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.id, str) or not self.id.strip():
+            raise DomainValidationError("id must be a non-empty string")
+
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> Order:
         try:
@@ -91,7 +102,7 @@ class Order:
             raise DomainValidationError(str(error)) from error
 
         return cls(
-            id=_required_int(data, "id"),
+            id=_required_str(data, "id"),
             parent_id=_optional_int(data.get("parent_id"), "parent_id"),
             user_id=_optional_int(data.get("user_id"), "user_id"),
             sum=_required_int(data, "sum"),
@@ -222,7 +233,7 @@ class CandidateDecision:
 
 @dataclass(frozen=True, slots=True)
 class FilterResult:
-    order_id: int
+    order_id: str
     decisions: tuple[CandidateDecision, ...]
 
     @property

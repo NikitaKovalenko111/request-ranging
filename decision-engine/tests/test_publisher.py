@@ -35,7 +35,7 @@ def test_kafka_publisher_sends_final_event_with_order_key() -> None:
                 'effective_load': 0.0,
             }
         )
-        result = SimpleNamespace(order_id=42, balanced_candidates=(candidate,))
+        result = SimpleNamespace(order_id='42', balanced_candidates=(candidate,))
 
         await publisher.publish(result)  # type: ignore[arg-type]
 
@@ -46,6 +46,7 @@ def test_kafka_publisher_sends_final_event_with_order_key() -> None:
         assert key == b'42'
         assert event['event_type'] == 'ExecutorDecisionCompleted'
         assert event['event_version'] == 1
+        assert event['order_id'] == '42'
         assert event['balanced_candidates'][0]['executor_id'] == '7'
         assert set(event) == {
             'event_type',
@@ -65,7 +66,7 @@ def test_kafka_publisher_propagates_delivery_error() -> None:
 
     async def scenario() -> None:
         publisher = KafkaDecisionResultPublisher(FailingProducer())
-        result = SimpleNamespace(order_id=42, balanced_candidates=())
+        result = SimpleNamespace(order_id='42', balanced_candidates=())
         with pytest.raises(RuntimeError, match='Kafka unavailable'):
             await publisher.publish(result)  # type: ignore[arg-type]
 

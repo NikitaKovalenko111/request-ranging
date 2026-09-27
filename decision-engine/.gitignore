@@ -11,3 +11,6 @@ data/processed/*
 !data/processed/.gitkeep
 models/*
 !models/.gitkeep
+
+/reports/*
+!/reports/.gitkeep

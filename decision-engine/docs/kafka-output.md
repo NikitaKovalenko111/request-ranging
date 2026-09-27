@@ -25,7 +25,7 @@ Event shape:
   "event_type": "ExecutorDecisionCompleted",
   "event_version": 1,
   "occurred_at": "2026-09-27T10:00:00+00:00",
-  "order_id": 42,
+  "order_id": "42",
   "balanced_candidates": [
     {
       "executor_id": "7",

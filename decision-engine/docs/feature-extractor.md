@@ -17,9 +17,9 @@ The stage returns:
 - extracted keywords;
 - per-executor skill match scores.
 
-ML Ranker v1 consumes complexity and urgency. Skill match scores are retained in
-PipelineResult and can become a trained Ranker feature in the next model version
-without changing the pipeline boundary.
+ML Ranker v2 consumes complexity, urgency, estimated effort, keyword count and
+per-executor skill match scores. These values are also retained in
+PipelineResult for diagnostics.
 
 Classifier datasets are stored in data/feature_extractor/classifier. Local
 matching samples are stored in examples/feature_extractor. Transformer tools

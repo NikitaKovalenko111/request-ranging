@@ -1,5 +1,7 @@
 # Executor Decision Engine
 
+Полная инструкция по установке: [docs/setup.md](docs/setup.md).
+
 One Python project for the complete executor selection pipeline:
 
 1. Rule Engine rejects candidates that violate mandatory rules.

@@ -12,10 +12,13 @@ from .schemas import Executor, Order
 FEATURE_COLUMNS: tuple[str, ...] = (
     "order_complexity",
     "order_urgency",
+    "order_estimated_effort",
+    "order_keyword_count",
     "experience_score",
     "speed_score",
     "reliability_score",
     "historical_success_rate",
+    "skill_match_score",
     "processing_speed_score",
     "history_confidence",
     "experience_fit",
@@ -24,6 +27,8 @@ FEATURE_COLUMNS: tuple[str, ...] = (
     "speed_gap",
     "reliability_under_complexity",
     "success_confidence",
+    "effort_experience_fit",
+    "skill_experience_synergy",
 )
 
 
@@ -53,10 +58,13 @@ class FeatureBuilder:
         features = {
             "order_complexity": order.complexity,
             "order_urgency": order.urgency,
+            "order_estimated_effort": order.estimated_effort_score,
+            "order_keyword_count": order.keyword_count_score,
             "experience_score": executor.experience_score,
             "speed_score": executor.speed_score,
             "reliability_score": executor.reliability_score,
             "historical_success_rate": executor.historical_success_rate,
+            "skill_match_score": executor.skill_match_score,
             "processing_speed_score": processing_speed_score,
             "history_confidence": history_confidence,
             "experience_fit": 1.0
@@ -68,6 +76,10 @@ class FeatureBuilder:
             * (0.5 + 0.5 * order.complexity),
             "success_confidence": executor.historical_success_rate
             * history_confidence,
+            "effort_experience_fit": 1.0
+            - abs(order.estimated_effort_score - executor.experience_score),
+            "skill_experience_synergy": executor.skill_match_score
+            * (0.5 + 0.5 * executor.experience_score),
         }
         self.validate(features)
         return features

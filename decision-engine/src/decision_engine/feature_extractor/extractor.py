@@ -41,6 +41,10 @@ class HeuristicFeatureExtractor:
             '\u0430\u0440\u0445\u0438\u0442\u0435\u043a\u0442\u0443\u0440\u0430',
             '\u0438\u043d\u0442\u0435\u0433\u0440\u0430\u0446\u0438\u044f',
             '\u043c\u0438\u0433\u0440\u0430\u0446\u0438\u044f',
+            '\u044d\u043a\u0441\u043f\u0435\u0440\u0442\u0438\u0437\u0430',
+            '\u0430\u0443\u0434\u0438\u0442',
+            '\u0440\u0430\u0441\u0441\u043b\u0435\u0434\u043e\u0432\u0430\u043d\u0438\u0435',
+            '\u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u0438\u0435',
         }
     )
     _stop_words = frozenset(
@@ -137,7 +141,7 @@ class HeuristicFeatureExtractor:
             for skill in candidate.skills
             for token in re.findall(r'[\w+#.-]+', skill, re.UNICODE)
         }
-        return round(len(keyword_set & skill_tokens) / len(keyword_set), 4)
+        return round(len(keyword_set & skill_tokens) / len(skill_tokens), 4)
 
 
 class PredictorFeatureExtractor(HeuristicFeatureExtractor):

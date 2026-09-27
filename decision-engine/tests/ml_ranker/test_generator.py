@@ -26,6 +26,14 @@ def test_generator_is_reproducible_and_has_grouped_candidates() -> None:
     assert first.groupby("order_id")["executor_id"].nunique().eq(5).all()
     assert first["relevance"].between(0, 3).all()
     assert set(FEATURE_COLUMNS) <= set(first.columns)
+    assert {
+        "order_text",
+        "extracted_language",
+        "extracted_estimated_effort",
+        "extracted_keywords",
+    } <= set(first.columns)
+    assert first["skill_match_score"].between(0, 1).all()
+    assert first["skill_match_score"].nunique() > 1
 
 
 def test_different_seed_changes_dataset() -> None:

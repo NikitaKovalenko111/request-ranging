@@ -23,7 +23,7 @@ def profile(user_id: int, experience: float, *, active: bool = True) -> Executor
         historical_avg_processing_time=10.0,
         historical_orders_count=100,
         active=active,
-        skills=('python', 'postgresql'),
+        skills=('\u044d\u043a\u0441\u043f\u0435\u0440\u0442\u0438\u0437\u0430', '\u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b'),
     )
 
 
@@ -45,7 +45,7 @@ async def test_pipeline_filters_ranks_and_balances() -> None:
         publisher,
     )
     order = PipelineOrder(
-        id=101,
+        id='101',
         timestamp=datetime.now(UTC),
         sum=50_000,
         order_type=OrderType.ORDER_1,
@@ -86,7 +86,7 @@ async def test_pipeline_handles_no_eligible_executors() -> None:
         InMemoryDecisionResultPublisher(),
     )
     order = PipelineOrder(
-        id=102,
+        id='102',
         timestamp=datetime.now(UTC),
         sum=1,
         order_type=OrderType.ORDER_1,
@@ -113,7 +113,7 @@ async def test_pipeline_extracts_ranker_order_features_from_text() -> None:
         InMemoryDecisionResultPublisher(),
     )
     order = PipelineOrder(
-        id=103,
+        id='103',
         timestamp=datetime.now(UTC),
         sum=1,
         order_type=OrderType.ORDER_1,
@@ -121,10 +121,10 @@ async def test_pipeline_extracts_ranker_order_features_from_text() -> None:
         status=OrderStatus.PROCESSED,
         text=(
             '\u0421\u0440\u043e\u0447\u043d\u043e \u043d\u0443\u0436\u043d\u0430 '
-            '\u0438\u043d\u0442\u0435\u0433\u0440\u0430\u0446\u0438\u044f, '
-            '\u043c\u0438\u0433\u0440\u0430\u0446\u0438\u044f \u0438 '
-            '\u0430\u0440\u0445\u0438\u0442\u0435\u043a\u0442\u0443\u0440\u0430 '
-            'Python PostgreSQL'
+            '\u044d\u043a\u0441\u043f\u0435\u0440\u0442\u0438\u0437\u0430, '
+            '\u0430\u0443\u0434\u0438\u0442 \u0438 '
+            '\u0440\u0430\u0441\u0441\u043b\u0435\u0434\u043e\u0432\u0430\u043d\u0438\u0435 '
+            '\u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u043e\u0432'
         ),
     )
 

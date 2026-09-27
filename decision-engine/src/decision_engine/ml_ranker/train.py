@@ -105,6 +105,7 @@ def run_training(config: AppConfig = DEFAULT_CONFIG) -> dict[str, object]:
             "test_orders": int(test_frame["order_id"].nunique()),
             "synthetic": True,
             "seed": config.data.seed,
+            "feature_source": "synthetic_text_via_heuristic_feature_extractor",
         },
         "metrics": {name: value.as_dict() for name, value in metrics.items()},
     }

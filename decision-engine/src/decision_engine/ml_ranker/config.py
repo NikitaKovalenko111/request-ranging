@@ -33,7 +33,7 @@ class DataConfig:
 
 @dataclass(frozen=True, slots=True)
 class ModelConfig:
-    model_version: str = "ranker-v1"
+    model_version: str = "ranker-v2"
     loss_function: str = "YetiRankPairwise"
     iterations: int = 350
     depth: int = 7
@@ -45,9 +45,9 @@ class ModelConfig:
 
 @dataclass(frozen=True, slots=True)
 class PathConfig:
-    processed_dataset: Path = PROJECT_DIR / "data" / "processed" / "ranking_dataset.csv"
-    model_path: Path = PROJECT_DIR / "models" / "ranker-v1.cbm"
-    metadata_path: Path = PROJECT_DIR / "models" / "ranker-v1.metadata.json"
+    processed_dataset: Path = PROJECT_DIR / "data" / "processed" / "ranking_dataset_v2.csv"
+    model_path: Path = PROJECT_DIR / "models" / "ranker-v2.cbm"
+    metadata_path: Path = PROJECT_DIR / "models" / "ranker-v2.metadata.json"
 
 
 @dataclass(frozen=True, slots=True)

@@ -7,6 +7,7 @@ from .extractor import (
     PredictorFeatureExtractor,
 )
 from .schemas import ExtractedFeatures, FeatureCandidate, FeatureExtractionRequest
+from .ml_extractor import MLFeatureExtractor
 
 __all__ = [
     'ExtractedFeatures',
@@ -15,5 +16,6 @@ __all__ = [
     'FeatureExtractor',
     'HeuristicFeatureExtractor',
     'LabelPredictor',
+    'MLFeatureExtractor',
     'PredictorFeatureExtractor',
 ]

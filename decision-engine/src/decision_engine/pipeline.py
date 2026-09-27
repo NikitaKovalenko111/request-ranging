@@ -30,7 +30,7 @@ from .rule_engine.engine import RuleEngine
 class PipelineOrder:
     '''One order contract shared by all four pipeline stages.'''
 
-    id: int
+    id: str
     timestamp: datetime
     sum: int
     order_type: OrderType
@@ -47,6 +47,8 @@ class PipelineOrder:
     text: str | None = None
 
     def __post_init__(self) -> None:
+        if not isinstance(self.id, str) or not self.id.strip():
+            raise ValueError('id must be a non-empty string')
         for name, value in (('complexity', self.complexity), ('urgency', self.urgency)):
             if value is not None and (not isfinite(value) or not 0.0 <= value <= 1.0):
                 raise ValueError(f'{name} must be in [0, 1]')
@@ -70,10 +72,12 @@ class PipelineOrder:
 
     def as_ranker_order(self, features: ExtractedFeatures) -> RankerOrder:
         return RankerOrder(
-            id=str(self.id),
+            id=self.id,
             timestamp=self.timestamp,
             complexity=features.complexity,
             urgency=features.urgency,
+            estimated_effort_score=features.estimated_effort_score,
+            keyword_count_score=features.keyword_count_score,
         )
 
 
@@ -102,7 +106,7 @@ class ExecutorProfile:
             daily_count=self.daily_count,
         )
 
-    def as_ranker_executor(self) -> RankerExecutor:
+    def as_ranker_executor(self, *, skill_match_score: float = 0.0) -> RankerExecutor:
         return RankerExecutor(
             id=str(self.user_id),
             experience_score=self.experience_score,
@@ -111,12 +115,13 @@ class ExecutorProfile:
             historical_success_rate=self.historical_success_rate,
             historical_avg_processing_time=self.historical_avg_processing_time,
             historical_orders_count=self.historical_orders_count,
+            skill_match_score=skill_match_score,
         )
 
 
 @dataclass(frozen=True, slots=True)
 class PipelineResult:
-    order_id: int
+    order_id: str
     rule_result: FilterResult
     extracted_features: ExtractedFeatures
     ml_ranking: tuple[RankedExecutor, ...]
@@ -171,7 +176,7 @@ class DecisionPipeline:
         eligible = [profiles[executor_id] for executor_id in rule_result.eligible_executor_ids]
         extracted_features = self._feature_extractor.extract(
             FeatureExtractionRequest(
-                order_id=str(order.id),
+                order_id=order.id,
                 text=order.text or '',
                 fallback_complexity=order.complexity,
                 fallback_urgency=order.urgency,
@@ -186,7 +191,15 @@ class DecisionPipeline:
         )
         ml_ranking = self._ranker.rank(
             order.as_ranker_order(extracted_features),
-            [profile.as_ranker_executor() for profile in eligible],
+            [
+                profile.as_ranker_executor(
+                    skill_match_score=extracted_features.skill_match_scores.get(
+                        str(profile.user_id),
+                        0.0,
+                    )
+                )
+                for profile in eligible
+            ],
         )
         candidates = [
             BalancerCandidate(
@@ -197,7 +210,7 @@ class DecisionPipeline:
             for item in ml_ranking
         ]
         balanced = await self._balancer.balance(
-            BalancerOrder(order_id=str(order.id), weight=order.weight),
+            BalancerOrder(order_id=order.id, weight=order.weight),
             candidates,
         )
         result = PipelineResult(

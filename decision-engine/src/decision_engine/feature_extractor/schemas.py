@@ -62,3 +62,16 @@ class ExtractedFeatures:
             'keywords': list(self.keywords),
             'skill_match_scores': dict(self.skill_match_scores),
         }
+
+    @property
+    def estimated_effort_score(self) -> float:
+        return {
+            'up_to_1h': 0.0,
+            '1_to_4h': 1.0 / 3.0,
+            '4_to_8h': 2.0 / 3.0,
+            'over_8h': 1.0,
+        }.get(self.estimated_effort, 0.5)
+
+    @property
+    def keyword_count_score(self) -> float:
+        return min(len(self.keywords) / 24.0, 1.0)

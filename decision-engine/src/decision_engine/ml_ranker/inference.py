@@ -45,12 +45,15 @@ class HeuristicRanker:
     @staticmethod
     def score_features(features: dict[str, float] | pd.Series) -> float:
         return float(
-            0.28 * features["experience_fit"]
-            + 0.22 * features["urgency_speed_fit"]
-            + 0.20 * features["reliability_score"]
-            + 0.18 * features["historical_success_rate"]
-            + 0.07 * features["processing_speed_score"]
-            + 0.05 * features["history_confidence"]
+            0.20 * features["experience_fit"]
+            + 0.17 * features["urgency_speed_fit"]
+            + 0.14 * features["reliability_score"]
+            + 0.13 * features["historical_success_rate"]
+            + 0.16 * features["skill_match_score"]
+            + 0.08 * features["skill_experience_synergy"]
+            + 0.06 * features["effort_experience_fit"]
+            + 0.04 * features["processing_speed_score"]
+            + 0.02 * features["history_confidence"]
         )
 
 

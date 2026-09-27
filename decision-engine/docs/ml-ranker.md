@@ -1,119 +1,139 @@
-# ML Ranker v1
+# ML Ranker v2
 
-Локальный Learning-to-Rank модуль для ранжирования уже допустимых исполнителей.
-Он не проверяет hard constraints, не учитывает текущую нагрузку/fairness и не
-назначает исполнителя. Эти задачи остаются у Rule Engine и Balancer.
+ML Ranker сортирует исполнителей, которые уже прошли Rule Engine. Он не
+проверяет обязательные ограничения и не учитывает текущую нагрузку — это задача
+Balancer.
 
-## Pipeline
+## Подготовка обучающего датасета
 
 ```text
-Synthetic orders + executors
-            ↓
-FeatureBuilder(Order, Executor)
-            ↓
-grouped dataset (group_id = order_id)
-            ↓
-temporal group split
-            ↓
-HeuristicRanker baseline ↔ CatBoostRanker
-            ↓
-NDCG@5 + MRR + HitRate@1
-            ↓
-ranker-v1.cbm + metadata.json
-            ↓
-local inference
+Synthetic order text + executor skills
+                    ↓
+          Feature Extractor
+                    ↓
+complexity, urgency, effort, keywords, skill match
+                    ↓
+             Feature Builder
+                    ↓
+ grouped ranking dataset (group_id = order_id)
+                    ↓
+       temporal train/validation/test split
+                    ↓
+              CatBoostRanker
 ```
 
-Синтетические labels показывают работоспособность pipeline, но не являются
-доказательством качества на реальных данных АИС. Production-модель потребует
-исторических outcome-событий, вычисленных строго на момент создания заявки.
+Генератор сначала создаёт текст заявки и навыки исполнителей, а затем вызывает
+тот же контракт Feature Extractor, который используется в runtime. Поэтому
+датасет v2 больше не подставляет complexity и urgency напрямую.
 
-## Feature Contract v1
+Синтетические relevance-метки назначаются относительно кандидатов одной
+заявки:
 
-Контракт находится в `src/decision_engine/ml_ranker/feature_builder.py`. Он включает:
+- лучший кандидат — 3;
+- следующие 20% — 2;
+- следующие 40% — 1;
+- остальные — 0.
 
-- нормализованные агрегаты исполнителя;
-- confidence на основе объёма истории;
-- нормализованную историческую скорость;
-- pair-признаки соответствия сложности опыту и срочности скорости;
-- взаимодействия надёжности, сложности и исторической успешности.
+Это демонстрационный датасет. Для production модель необходимо переобучить на
+исторических результатах обработки реальных заявок.
+
+## Feature Contract v2
+
+Контракт определён в
+`src/decision_engine/ml_ranker/feature_builder.py`.
+
+Признаки заявки из Feature Extractor:
+
+- `order_complexity`;
+- `order_urgency`;
+- `order_estimated_effort`;
+- `order_keyword_count`.
+
+Признаки исполнителя:
+
+- `experience_score`;
+- `speed_score`;
+- `reliability_score`;
+- `historical_success_rate`;
+- `skill_match_score`;
+- нормализованная историческая скорость;
+- confidence на основе количества исторических заявок.
+
+Парные признаки заявки и исполнителя:
+
+- соответствие сложности опыту;
+- соответствие срочности скорости;
+- соответствие трудозатрат опыту;
+- взаимодействие skill matching и опыта;
+- надёжность при заданной сложности;
+- confidence исторической успешности.
 
 В признаки намеренно не входят:
 
-- активность и другие hard constraints;
-- текущая/ожидающая нагрузка;
+- hard constraints;
+- текущая и ожидающая нагрузка;
 - fairness;
-- ID заявки или исполнителя;
-- скрытая формула synthetic generator;
-- текст, LLM и skills.
+- идентификаторы заявки и исполнителя.
 
-## Установка
+## Артефакты v2
 
-```powershell
-cd decision-engine/ml-ranker
-py -3.12 -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -e ".[dev]"
+```text
+data/processed/ranking_dataset_v2.csv
+models/ranker-v2.cbm
+models/ranker-v2.metadata.json
 ```
 
-Поддерживается Python 3.11+.
+Полный датасет содержит:
+
+- 5 000 заявок;
+- 10 кандидатов на заявку;
+- 50 000 строк;
+- текст и диагностические результаты Feature Extractor;
+- 19 числовых признаков модели.
 
 ## Обучение
 
-Полный локальный запуск генерирует dataset, делит его по целым группам заявок,
-обучает CatBoost и сравнивает его с baseline:
+Из корня `decision-engine`:
 
 ```powershell
-python -m decision_engine.ml_ranker.train
+.venv\Scripts\decision-ranker-train
+```
+
+Или:
+
+```powershell
+.venv\Scripts\python -m decision_engine.ml_ranker.train
 ```
 
 Быстрый smoke-run:
 
 ```powershell
-python -m decision_engine.ml_ranker.train --orders 300 --candidates 8 --executors 100 --iterations 50
+.venv\Scripts\python -m decision_engine.ml_ranker.train --orders 300 --candidates 8 --executors 100 --iterations 50
 ```
 
-Артефакты:
+## Метрики текущей модели
 
-- `data/processed/ranking_dataset.csv`;
-- `models/ranker-v1.cbm`;
-- `models/ranker-v1.metadata.json` с feature contract, параметрами выборки и
-  метриками baseline/ML.
+На 500 тестовых заявках:
 
-Значения по умолчанию находятся в `src/decision_engine/ml_ranker/config.py`: 5 000 заявок × 10 кандидатов,
-350 итераций CatBoost, `YetiRankPairwise`.
+| Модель | NDCG@5 | MRR | HitRate@1 |
+|---|---:|---:|---:|
+| Heuristic baseline | 0.8603 | 0.7328 | 0.578 |
+| CatBoostRanker v2 | 0.8756 | 0.7514 | 0.602 |
+
+Метрики относятся только к синтетическому датасету и не являются оценкой
+качества на реальных данных.
 
 ## Локальный inference
 
 ```powershell
-python -m decision_engine.ml_ranker.inference
+.venv\Scripts\decision-ranker-demo
 ```
 
-Если обученная модель отсутствует, пример автоматически использует
-`HeuristicRanker`. Это cold-start/fallback режим. CatBoost score преобразуется
-сигмоидой в диапазон `[0, 1]`; он остаётся относительной оценкой, а не
-калиброванной вероятностью успеха.
-
-Программный интерфейс:
-
-```python
-ranker = MLRanker(model_path, metadata_path)
-ranking = ranker.rank(order, eligible_executors)
-```
-
-На вход должны подаваться только кандидаты, прошедшие Rule Engine.
+Если модель v2 отсутствует или её feature contract отличается от runtime,
+используется `HeuristicRanker`.
 
 ## Тесты
 
 ```powershell
-pytest
+.venv\Scripts\python -m pytest tests\ml_ranker
 ```
-
-Проверяются воспроизводимость генератора, целостность групп, отсутствие leakage
-между split, Feature Contract, ranking-метрики и локальный heuristic inference.
-
-## Не входит в v1
-
-Kafka, Redis, REST API, Rule Engine, Balancer, LLM, online learning,
-автоматическое переобучение и интеграция с АИС намеренно не реализованы.
-

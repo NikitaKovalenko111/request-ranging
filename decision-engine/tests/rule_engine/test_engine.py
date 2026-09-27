@@ -9,7 +9,7 @@ SUBJECT = UUID("96bc9564-fb0b-4db5-b4b6-ce11c2fb5e6f")
 
 def make_order(**overrides: object) -> Order:
     values = {
-        "id": 42,
+        "id": "42",
         "sum": 1_000,
         "client_msp": "client-a",
         "executor_msp": "executor-a",
@@ -127,6 +127,7 @@ def test_order_type_alias_from_database_is_normalized() -> None:
         }
     )
 
+    assert order.id == "1"
     assert default_rule_engine().filter(order, [executor]).eligible_executor_ids == [4]
 
 

@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("3.11", "3.12", "3.13")]
-    [string]$PythonVersion = "3.12",
+    [ValidateSet("auto", "3.11", "3.12", "3.13")]
+    [string]$PythonVersion = "auto",
 
     [ValidateRange(3, 1000000)]
     [int]$RankerOrders = 5000,
@@ -73,6 +73,87 @@ function Invoke-External {
     }
 }
 
+function Test-PythonRuntime {
+    param(
+        [Parameter(Mandatory)]
+        [string]$FilePath,
+
+        [string[]]$PrefixArguments = @(),
+
+        [string]$ExpectedVersion
+    )
+
+    $probeCode = if ([string]::IsNullOrWhiteSpace($ExpectedVersion)) {
+        "import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)"
+    }
+    else {
+        $parts = $ExpectedVersion.Split(".")
+        "import sys; raise SystemExit(0 if sys.version_info[:2] == ($($parts[0]), $($parts[1])) else 1)"
+    }
+
+    & $FilePath @PrefixArguments "-c" $probeCode *> $null
+    return $LASTEXITCODE -eq 0
+}
+
+function Resolve-PythonRuntime {
+    param(
+        [Parameter(Mandatory)]
+        [string]$RequestedVersion
+    )
+
+    $versions = if ($RequestedVersion -eq "auto") {
+        @("3.12", "3.11", "3.13")
+    }
+    else {
+        @($RequestedVersion)
+    }
+
+    $pyLauncher = Get-Command py -ErrorAction SilentlyContinue
+    if ($null -ne $pyLauncher) {
+        foreach ($version in $versions) {
+            $prefix = @("-$version")
+            if (Test-PythonRuntime -FilePath $pyLauncher.Source -PrefixArguments $prefix -ExpectedVersion $version) {
+                return [PSCustomObject]@{
+                    FilePath = $pyLauncher.Source
+                    PrefixArguments = [string[]]$prefix
+                    Version = $version
+                }
+            }
+        }
+    }
+
+    $commandNames = if ($RequestedVersion -eq "auto") {
+        @("python3.12", "python3.11", "python3.13", "python")
+    }
+    else {
+        @("python$RequestedVersion", "python")
+    }
+
+    foreach ($commandName in $commandNames) {
+        $pythonCommand = Get-Command $commandName -ErrorAction SilentlyContinue
+        if ($null -eq $pythonCommand) {
+            continue
+        }
+        $expected = if ($RequestedVersion -eq "auto") { $null } else { $RequestedVersion }
+        if (Test-PythonRuntime -FilePath $pythonCommand.Source -ExpectedVersion $expected) {
+            $detectedVersion = & $pythonCommand.Source "-c" "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"
+            if ($LASTEXITCODE -ne 0) {
+                continue
+            }
+            return [PSCustomObject]@{
+                FilePath = $pythonCommand.Source
+                PrefixArguments = [string[]]@()
+                Version = [string]$detectedVersion
+            }
+        }
+    }
+
+    if ($RequestedVersion -eq "auto") {
+        throw "No compatible Python runtime found. Install Python 3.11+ and run 'py -0p' to inspect detected versions."
+    }
+    throw "Python $RequestedVersion was not found. Install it, use -PythonVersion auto, or run 'py -0p' to inspect detected versions."
+}
+
 function Test-ModelFiles {
     param(
         [Parameter(Mandatory)]
@@ -120,28 +201,17 @@ if (-not (Test-Path -LiteralPath $projectRoot -PathType Container)) {
 }
 
 if (-not (Test-Path -LiteralPath $pythonExe -PathType Leaf)) {
-    Write-Step "Creating Python $PythonVersion virtual environment"
-    $pyLauncher = Get-Command py -ErrorAction SilentlyContinue
-    if ($null -ne $pyLauncher) {
-        $externalArgs = @{
-            FilePath = $pyLauncher.Source
-            Arguments = @("-$PythonVersion", "-m", "venv", $venvRoot)
-            Description = "Create virtual environment"
-        }
-        Invoke-External @externalArgs
+    $runtime = Resolve-PythonRuntime -RequestedVersion $PythonVersion
+    Write-Step "Creating Python $($runtime.Version) virtual environment"
+    $venvArguments = @()
+    $venvArguments += $runtime.PrefixArguments
+    $venvArguments += @("-m", "venv", $venvRoot)
+    $externalArgs = @{
+        FilePath = $runtime.FilePath
+        Arguments = [string[]]$venvArguments
+        Description = "Create virtual environment"
     }
-    else {
-        $systemPython = Get-Command python -ErrorAction SilentlyContinue
-        if ($null -eq $systemPython) {
-            throw "Python was not found. Install Python 3.11+ or the Windows py launcher."
-        }
-        $externalArgs = @{
-            FilePath = $systemPython.Source
-            Arguments = @("-m", "venv", $venvRoot)
-            Description = "Create virtual environment"
-        }
-        Invoke-External @externalArgs
-    }
+    Invoke-External @externalArgs
 }
 
 $externalArgs = @{

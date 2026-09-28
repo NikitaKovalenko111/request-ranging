@@ -1,2 +1,8 @@
+# Project caches
 *_cache
-.vs
+
+# IDE metadata
+.vs/
+
+# JavaScript dependencies installed at any project level
+node_modules/

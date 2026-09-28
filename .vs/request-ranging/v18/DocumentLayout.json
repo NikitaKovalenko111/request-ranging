@@ -1,0 +1,88 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\univer_coding\\request-ranging\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\univer_coding\\request-ranging\\frontend\\src\\features\\rules\\pages\\RulesPage.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:frontend\\src\\features\\rules\\pages\\RulesPage.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\univer_coding\\request-ranging\\frontend\\src\\features\\rules\\components\\RuleExpressionEditor.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:frontend\\src\\features\\rules\\components\\RuleExpressionEditor.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\univer_coding\\request-ranging\\frontend\\src\\features\\rules\\components\\RuleForm.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:frontend\\src\\features\\rules\\components\\RuleForm.tsx||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\univer_coding\\request-ranging\\frontend\\src\\features\\rules\\model\\ruleForm.schema.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:frontend\\src\\features\\rules\\model\\ruleForm.schema.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "RulesPage.tsx",
+              "DocumentMoniker": "C:\\univer_coding\\request-ranging\\frontend\\src\\features\\rules\\pages\\RulesPage.tsx",
+              "RelativeDocumentMoniker": "frontend\\src\\features\\rules\\pages\\RulesPage.tsx",
+              "ToolTip": "C:\\univer_coding\\request-ranging\\frontend\\src\\features\\rules\\pages\\RulesPage.tsx",
+              "RelativeToolTip": "frontend\\src\\features\\rules\\pages\\RulesPage.tsx",
+              "ViewState": "AgIAAJEAAAAAAAAAAAAowJ8AAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2026-09-28T12:09:20.697Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "RuleExpressionEditor.tsx",
+              "DocumentMoniker": "C:\\univer_coding\\request-ranging\\frontend\\src\\features\\rules\\components\\RuleExpressionEditor.tsx",
+              "RelativeDocumentMoniker": "frontend\\src\\features\\rules\\components\\RuleExpressionEditor.tsx",
+              "ToolTip": "C:\\univer_coding\\request-ranging\\frontend\\src\\features\\rules\\components\\RuleExpressionEditor.tsx",
+              "RelativeToolTip": "frontend\\src\\features\\rules\\components\\RuleExpressionEditor.tsx",
+              "ViewState": "AgIAADgAAAAAAAAAAAAkwFkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2026-09-28T12:08:40.923Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "RuleForm.tsx",
+              "DocumentMoniker": "C:\\univer_coding\\request-ranging\\frontend\\src\\features\\rules\\components\\RuleForm.tsx",
+              "RelativeDocumentMoniker": "frontend\\src\\features\\rules\\components\\RuleForm.tsx",
+              "ToolTip": "C:\\univer_coding\\request-ranging\\frontend\\src\\features\\rules\\components\\RuleForm.tsx",
+              "RelativeToolTip": "frontend\\src\\features\\rules\\components\\RuleForm.tsx",
+              "ViewState": "AgIAAHkAAAAAAAAAAAAgwJwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2026-09-28T12:06:22.596Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ruleForm.schema.ts",
+              "DocumentMoniker": "C:\\univer_coding\\request-ranging\\frontend\\src\\features\\rules\\model\\ruleForm.schema.ts",
+              "RelativeDocumentMoniker": "frontend\\src\\features\\rules\\model\\ruleForm.schema.ts",
+              "ToolTip": "C:\\univer_coding\\request-ranging\\frontend\\src\\features\\rules\\model\\ruleForm.schema.ts",
+              "RelativeToolTip": "frontend\\src\\features\\rules\\model\\ruleForm.schema.ts",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAGIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
+              "WhenOpened": "2026-09-28T12:05:57.815Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -11,10 +11,12 @@ function formatLimit(e: Executor): string {
 export function ExecutorTable({
     items,
     onToggle,
+    onRowClick,
     pendingId,
 }: {
     items: Executor[];
     onToggle: (e: Executor) => void;
+    onRowClick?: (e: Executor) => void;
     pendingId: number | null;
 }) {
     return (
@@ -37,7 +39,11 @@ export function ExecutorTable({
                     </thead>
                     <tbody>
                         {items.map((e) => (
-                            <tr key={e.id}>
+                            <tr
+                                key={e.id}
+                                onClick={() => onRowClick?.(e)}
+                                style={{ cursor: onRowClick ? 'pointer' : undefined }}
+                            >
                                 <td>
                                     <strong>{e.displayName}</strong>
                                     <small className="cell-meta">#{e.id}</small>
@@ -58,7 +64,7 @@ export function ExecutorTable({
                                         ? new Date(e.lastAssignmentAt).toLocaleString('ru-RU')
                                         : '—'}
                                 </td>
-                                <td>
+                                <td onClick={(ev) => ev.stopPropagation()}>
                                     <Switch
                                         checked={e.status === 'ACTIVE'}
                                         disabled={pendingId === e.id}

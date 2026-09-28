@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\frontend",
+    "\\frontend\\src",
+    "\\frontend\\src\\features",
+    "\\frontend\\src\\features\\rules",
+    "\\frontend\\src\\features\\rules\\components",
+    "\\frontend\\src\\features\\rules\\model",
+    "\\frontend\\src\\features\\rules\\pages"
+  ],
+  "SelectedNode": "\\frontend\\src\\features\\rules\\pages\\RulesPage.tsx",
+  "PreviewInSolutionExplorer": false
+}

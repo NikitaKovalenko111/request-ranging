@@ -1,3 +1,4 @@
+import { ApiRequestError } from './errors';
 import { apiClient } from './client';
 import { useMockData } from './dataSource';
 import { mockRules } from '../mocks/rules';
@@ -22,6 +23,16 @@ export async function getRules(
   signal?: AbortSignal,
 ): Promise<PaginatedResponse<Rule>> {
   if (useMockData) {
+    // Симуляция ошибки при поиске "__error__"
+    if (filters.search === '__error__') {
+      await delay(300);
+      throw new ApiRequestError(500, {
+        code: 'MOCK_ERROR',
+        message: 'Симулированная ошибка сервера',
+        traceId: 'mock-req-' + Date.now(),
+      });
+    }
+
     await delay(300);
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
     let result = [...inMemory];

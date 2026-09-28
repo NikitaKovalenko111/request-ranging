@@ -1,13 +1,16 @@
+import { useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../../../shared/components/Button';
 import { Input } from '../../../shared/components/Input';
 import { Switch } from '../../../shared/components/Switch';
 import { FormField } from '../../../shared/components/form/FormField';
 import { RuleExpressionEditor } from './RuleExpressionEditor';
-import type { RuleDraft } from '../../../types/rule';
+import { ruleFormSchema, type RuleFormValues } from '../model/ruleForm.schema';
+import type { RuleDraft, RuleExpression } from '../../../types/rule';
 import type { RuleSchema } from '../../../types/ruleSchema';
 
-const emptyExpression: RuleDraft['requirements'][number] = {
+const emptyExpression: RuleExpression = {
     left: { type: 'FIELD', source: 'ORDER', field: '' },
     operator: 'EQ',
     right: { type: 'CONSTANT', value: '' },
@@ -29,28 +32,52 @@ export function RuleForm({
     onSubmit,
     onCancel,
     loading,
+    serverFieldErrors,
 }: {
     schema: RuleSchema;
     initial?: RuleDraft;
     onSubmit: (draft: RuleDraft) => void;
     onCancel: () => void;
     loading?: boolean;
+    serverFieldErrors?: Record<string, string>;
 }) {
-    const form = useForm<RuleDraft>({ defaultValues: initial ?? emptyDraft });
+    const form = useForm<RuleFormValues>({
+        defaultValues: (initial ?? emptyDraft) as RuleFormValues,
+        resolver: zodResolver(ruleFormSchema),
+    });
+
     const whenArray = useFieldArray({ control: form.control, name: 'when' });
     const reqArray = useFieldArray({ control: form.control, name: 'requirements' });
 
+    // Применяем server fieldErrors к форме
+    useEffect(() => {
+        if (!serverFieldErrors) return;
+        Object.entries(serverFieldErrors).forEach(([path, message]) => {
+            form.setError(path as never, { type: 'server', message });
+        });
+    }, [serverFieldErrors, form]);
+
     const submit = form.handleSubmit((values) => {
-        onSubmit({ ...values, description: values.description || null });
+        onSubmit({
+            ...values,
+            description: values.description || null,
+        } as RuleDraft);
     });
 
     return (
-        <form onSubmit={submit}>
-            <FormField label="Название" required>
-                <Input {...form.register('name', { required: true })} />
+        <form onSubmit={submit} noValidate>
+            <FormField
+                label="Название"
+                required
+                error={form.formState.errors.name?.message}
+            >
+                <Input
+                    {...form.register('name')}
+                    invalid={!!form.formState.errors.name}
+                />
             </FormField>
 
-            <FormField label="Описание">
+            <FormField label="Описание" error={form.formState.errors.description?.message}>
                 <Input {...form.register('description')} />
             </FormField>
 
@@ -92,19 +119,28 @@ export function RuleForm({
                 >
                     Добавить требование
                 </Button>
+                {form.formState.errors.requirements?.message ? (
+                    <div className="form-error" role="alert">
+                        {form.formState.errors.requirements.message}
+                    </div>
+                ) : null}
             </section>
 
-            <FormField label="Приоритет">
+            <FormField
+                label="Приоритет"
+                error={form.formState.errors.priority?.message}
+            >
                 <Input
                     type="number"
-                    {...form.register('priority', { valueAsNumber: true, min: 0 })}
+                    {...form.register('priority', { valueAsNumber: true })}
+                    invalid={!!form.formState.errors.priority}
                 />
             </FormField>
 
             <FormField label="Активность">
                 <Switch
                     checked={form.watch('active')}
-                    onChange={(v) => form.setValue('active', v)}
+                    onChange={(v) => form.setValue('active', v, { shouldDirty: true })}
                 />
             </FormField>
 

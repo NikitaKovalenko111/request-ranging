@@ -25,12 +25,14 @@ export function RuleExpressionEditor({
                     <Controller
                         control={control}
                         name={`${name}.left.field` as never}
-                        render={({ field: fieldField }) => {
+                        render={({ field: fieldField, fieldState }) => {
                             const fields =
                                 srcField.value === 'ORDER' ? schema.orderFields : schema.executorFields;
                             const current = fields.find((f) => f.name === fieldField.value);
+
                             return (
                                 <>
+                                    {/* Источник: заявка / исполнитель */}
                                     <Select
                                         value={srcField.value}
                                         onChange={(e) => {
@@ -41,9 +43,12 @@ export function RuleExpressionEditor({
                                         <option value="ORDER">Заявка</option>
                                         <option value="EXECUTOR">Исполнитель</option>
                                     </Select>
+
+                                    {/* Поле */}
                                     <Select
                                         value={fieldField.value}
                                         onChange={(e) => fieldField.onChange(e.target.value)}
+                                        invalid={!!fieldState.error}
                                     >
                                         <option value="">— поле —</option>
                                         {fields.map((f) => (
@@ -52,27 +57,34 @@ export function RuleExpressionEditor({
                                             </option>
                                         ))}
                                     </Select>
+
+                                    {/* Оператор + правая часть — в одном Controller, чтобы оператор был доступен RuleOperandEditor */}
                                     <Controller
                                         control={control}
                                         name={`${name}.operator` as never}
                                         render={({ field: opField }) => (
-                                            <Select
-                                                value={opField.value}
-                                                onChange={(e) => opField.onChange(e.target.value as RuleOperator)}
-                                            >
-                                                {(current?.allowedOperators ?? []).map((op) => (
-                                                    <option key={op} value={op}>
-                                                        {OPERATOR_LABELS[op]}
-                                                    </option>
-                                                ))}
-                                            </Select>
+                                            <>
+                                                <Select
+                                                    value={opField.value}
+                                                    onChange={(e) =>
+                                                        opField.onChange(e.target.value as RuleOperator)
+                                                    }
+                                                >
+                                                    {(current?.allowedOperators ?? []).map((op) => (
+                                                        <option key={op} value={op}>
+                                                            {OPERATOR_LABELS[op]}
+                                                        </option>
+                                                    ))}
+                                                </Select>
+                                                <RuleOperandEditor
+                                                    control={control}
+                                                    name={`${name}.right`}
+                                                    schema={schema}
+                                                    fieldDef={current}
+                                                    operator={opField.value as RuleOperator}
+                                                />
+                                            </>
                                         )}
-                                    />
-                                    <RuleOperandEditor
-                                        control={control}
-                                        name={`${name}.right`}
-                                        schema={schema}
-                                        fieldDef={current}
                                     />
                                 </>
                             );
@@ -81,7 +93,7 @@ export function RuleExpressionEditor({
                 )}
             />
             {onRemove && (
-                <button type="button" onClick={onRemove} className="button ghost compact-button">
+                <button type="button" onClick={onRemove} className="link-danger">
                     Удалить
                 </button>
             )}

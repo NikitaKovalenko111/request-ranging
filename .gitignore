@@ -1,3 +1,6 @@
+# Project caches
 *_cache
+
 .vs
 *.log
+node_modules/

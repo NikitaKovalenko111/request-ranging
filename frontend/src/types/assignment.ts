@@ -2,8 +2,8 @@ import type { AssignmentStatus } from './order';
 import type { DecisionTrace } from './decisionTrace';
 
 export interface Assignment {
-  orderId: number;
-  executorId: number | null;
+  orderId: string;
+  executorId: string | null;
   executorName: string | null;
   status: AssignmentStatus;
   createdAt: string;

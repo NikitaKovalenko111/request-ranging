@@ -2,7 +2,7 @@ import type { Executor } from '../types/executor';
 
 export const mockExecutors: Executor[] = [
   {
-    id: 28,
+    id: '28',
     firstName: 'Иван',
     lastName: 'Петров',
     middleName: 'Викторович',
@@ -18,7 +18,7 @@ export const mockExecutors: Executor[] = [
     lastAssignmentAt: '2026-09-25T17:42:12Z',
   },
   {
-    id: 29,
+    id: '29',
     firstName: 'Анна',
     lastName: 'Смирнова',
     middleName: null,
@@ -34,7 +34,7 @@ export const mockExecutors: Executor[] = [
     lastAssignmentAt: '2026-09-25T15:00:00Z',
   },
   {
-    id: 30,
+    id: '30',
     firstName: 'Оченьдлинноеимя',
     lastName: 'Оченьдлиннаяфамилия',
     middleName: 'Оченьдлинноеотчество',
@@ -50,7 +50,7 @@ export const mockExecutors: Executor[] = [
     lastAssignmentAt: null,
   },
   {
-    id: 31,
+    id: '31',
     firstName: 'Сергей',
     lastName: 'Кузнецов',
     middleName: 'Петрович',
@@ -66,7 +66,7 @@ export const mockExecutors: Executor[] = [
     lastAssignmentAt: '2026-09-24T10:00:00Z',
   },
   {
-    id: 32,
+    id: '32',
     firstName: 'Мария',
     lastName: 'Иванова',
     middleName: null,

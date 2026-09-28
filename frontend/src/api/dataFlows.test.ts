@@ -11,9 +11,9 @@ const filters: OrderFilters = {
 
 describe('доменные потоки данных', () => {
   it('возвращает назначение и Decision Trace одним контрактом', async () => {
-    const result = await getAssignmentByOrderId(1048);
-    expect(result.assignment?.orderId).toBe(1048);
-    expect(result.decisionTrace?.selectedExecutorId).toBe(28);
+    const result = await getAssignmentByOrderId('1048');
+    expect(result.assignment?.orderId).toBe('1048');
+    expect(result.decisionTrace?.selectedExecutorId).toBe('28');
   });
 
   it('фильтрует повторные заявки и сохраняет пагинацию', async () => {

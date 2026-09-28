@@ -41,7 +41,15 @@ export function RuleForm({
     const reqArray = useFieldArray({ control: form.control, name: 'requirements' });
 
     const submit = form.handleSubmit((values) => {
-        onSubmit({ ...values, description: values.description || null });
+        onSubmit({
+            name: values.name,
+            description: values.description || null,
+            when: values.when,
+            requirements: values.requirements,
+            logic: values.logic,
+            priority: values.priority,
+            active: values.active,
+        });
     });
 
     return (

@@ -15,7 +15,7 @@ export function useExecutors(filters: ExecutorFilters) {
 export function useUpdateExecutor() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, patch }: { id: number; patch: UpdateExecutorRequest }) =>
+    mutationFn: ({ id, patch }: { id: string; patch: UpdateExecutorRequest }) =>
       updateExecutor(id, patch),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.executors.all });

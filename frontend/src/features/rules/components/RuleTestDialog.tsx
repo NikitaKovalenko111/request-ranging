@@ -14,8 +14,8 @@ export function RuleTestDialog({
     rule: RuleDraft | null;
     onClose: () => void;
 }) {
-    const [orderId, setOrderId] = useState(1032);
-    const [executorId, setExecutorId] = useState(28);
+    const [orderId, setOrderId] = useState('1032');
+    const [executorId, setExecutorId] = useState('28');
     const [result, setResult] = useState<TestRuleResponse | null>(null);
     const testMut = useTestRule();
 
@@ -24,19 +24,20 @@ export function RuleTestDialog({
     return (
         <Dialog open={open} title="Тестирование правила" onClose={onClose}>
             <Input
-                type="number"
+                type="text"
                 value={orderId}
-                onChange={(e) => setOrderId(Number(e.target.value))}
+                onChange={(e) => setOrderId(e.target.value)}
                 placeholder="Order ID"
             />
             <Input
-                type="number"
+                type="text"
                 value={executorId}
-                onChange={(e) => setExecutorId(Number(e.target.value))}
+                onChange={(e) => setExecutorId(e.target.value)}
                 placeholder="Executor ID"
             />
             <Button
                 loading={testMut.isPending}
+                disabled={!orderId || !executorId}
                 onClick={() =>
                     testMut.mutate({ rule, orderId, executorId }, { onSuccess: setResult })
                 }

@@ -39,17 +39,17 @@ export async function getExecutors(
   return apiClient.get(`/executors?${params.toString()}`, { signal });
 }
 
-export async function getExecutor(id: number, options?: RequestOptions): Promise<Executor> {
+export async function getExecutor(id: string, options?: RequestOptions): Promise<Executor> {
   if (useMockData) {
     await delay(200);
     const found = inMemory.find((e) => e.id === id);
     if (!found) throw new Error('Executor not found');
     return found;
   }
-  return apiClient.get(`/executors/${id}`, options);
+  return apiClient.get(`/executors/${encodeURIComponent(id)}`, options);
 }
 
-export async function updateExecutor(id: number, patch: UpdateExecutorRequest): Promise<Executor> {
+export async function updateExecutor(id: string, patch: UpdateExecutorRequest): Promise<Executor> {
   if (useMockData) {
     await delay(300);
     const idx = inMemory.findIndex((e) => e.id === id);
@@ -57,5 +57,5 @@ export async function updateExecutor(id: number, patch: UpdateExecutorRequest): 
     inMemory[idx] = { ...inMemory[idx], ...patch };
     return inMemory[idx];
   }
-  return apiClient.patch(`/executors/${id}`, patch);
+  return apiClient.patch(`/executors/${encodeURIComponent(id)}`, patch);
 }

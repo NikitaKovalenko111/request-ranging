@@ -7,7 +7,7 @@ export interface FailedRule {
 }
 
 export interface CandidateDecision {
-  executorId: number;
+  executorId: string;
   executorName: string;
   active: boolean;
   passedRules: boolean;
@@ -23,8 +23,8 @@ export interface CandidateDecision {
 
 export interface ParentReuseDecision {
   attempted: boolean;
-  parentOrderId: number | null;
-  previousExecutorId: number | null;
+  parentOrderId: string | null;
+  previousExecutorId: string | null;
   previousExecutorName: string | null;
   previousExecutorActive: boolean | null;
   parametersMatched: boolean | null;
@@ -42,7 +42,7 @@ export interface DecisionStage {
 }
 
 export interface DecisionTrace {
-  orderId: number;
+  orderId: string;
   timestamp: string;
   processingTimeMs: number;
   modelVersion: string | null;
@@ -51,7 +51,7 @@ export interface DecisionTrace {
   activeExecutors: number;
   eligibleExecutors: number;
   topKExecutors: number | null;
-  selectedExecutorId: number | null;
+  selectedExecutorId: string | null;
   explanation: string;
   stages: DecisionStage[];
   parentReuse: ParentReuseDecision;

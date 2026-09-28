@@ -5,7 +5,7 @@ export const queryKeys = {
     executors: {
         all: ['executors'] as const,
         list: (filters: ExecutorFilters) => ['executors', 'list', filters] as const,
-        detail: (id: number) => ['executors', 'detail', id] as const,
+        detail: (id: string) => ['executors', 'detail', id] as const,
     },
     rules: {
         all: ['rules'] as const,

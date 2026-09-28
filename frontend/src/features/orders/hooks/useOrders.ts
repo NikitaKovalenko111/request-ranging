@@ -8,7 +8,7 @@ export function useOrders(filters: OrderFilters) {
   return useQuery({ queryKey: queryKeys.orders(filters), queryFn: ({ signal }) => getOrders(filters, signal), refetchInterval: env.pollIntervalMs, placeholderData: keepPreviousData });
 }
 
-export function useOrder(id: number) {
+export function useOrder(id: string) {
   return useQuery({ queryKey: queryKeys.order(id), queryFn: ({ signal }) => getOrder(id, signal), refetchInterval: env.pollIntervalMs });
 }
 

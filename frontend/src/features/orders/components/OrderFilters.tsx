@@ -6,7 +6,7 @@ export const emptyOrderFilters: Filters = {
   executorId: '', from: '', to: '', limit: 5, offset: 0, sort: 'createdAt', order: 'desc',
 };
 
-export function OrderFilters({ value, executors, onChange }: { value: Filters; executors: Array<{ id: number; name: string }>; onChange: (filters: Filters) => void }) {
+export function OrderFilters({ value, executors, onChange }: { value: Filters; executors: Array<{ id: string; name: string }>; onChange: (filters: Filters) => void }) {
   const update = <K extends keyof Filters>(key: K, next: Filters[K]) => onChange({ ...value, [key]: next, offset: key === 'offset' ? value.offset : 0 });
   const activeCount = [value.search, value.status, value.assignmentStatus, value.orderType, value.vip, value.hasParent, value.executorId, value.from, value.to].filter(Boolean).length;
   return <section className="filters expanded panel">

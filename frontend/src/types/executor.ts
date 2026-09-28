@@ -1,7 +1,7 @@
 export type ExecutorStatus = 'ACTIVE' | 'INACTIVE';
 
 export interface Executor {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   middleName: string | null;
@@ -19,7 +19,7 @@ export interface Executor {
 }
 
 export interface ExecutorOption {
-  id: number;
+  id: string;
   displayName: string;
   status: ExecutorStatus;
 }

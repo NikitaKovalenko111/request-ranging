@@ -15,7 +15,7 @@ export function ExecutorTable({
 }: {
     items: Executor[];
     onToggle: (e: Executor) => void;
-    pendingId: number | null;
+    pendingId: string | null;
 }) {
     return (
         <section className="panel table-panel">

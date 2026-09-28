@@ -46,8 +46,8 @@ export interface RuleFilters {
 
 export interface TestRuleRequest {
   rule: RuleDraft;
-  orderId: number;
-  executorId: number;
+  orderId: string;
+  executorId: string;
 }
 
 export interface RuleTestComparison {

@@ -5,11 +5,13 @@ import (
 	stdhttp "net/http"
 	"time"
 
+	apihandler "request-ranging/executor-balancer/internal/transport/http/handlers/api"
 	"request-ranging/executor-balancer/internal/transport/http/handlers/system"
 )
 
 type Handlers struct {
 	System *system.Handler
+	API    *apihandler.Handler
 }
 
 type Server struct {
@@ -17,11 +19,16 @@ type Server struct {
 	handlers Handlers
 }
 
-func NewServer(logger *slog.Logger, systemHandler *system.Handler) *Server {
+func NewServer(logger *slog.Logger, systemHandler *system.Handler, apiHandlers ...*apihandler.Handler) *Server {
+	var apiHandler *apihandler.Handler
+	if len(apiHandlers) > 0 {
+		apiHandler = apiHandlers[0]
+	}
 	return &Server{
 		logger: logger,
 		handlers: Handlers{
 			System: systemHandler,
+			API:    apiHandler,
 		},
 	}
 }
@@ -29,6 +36,9 @@ func NewServer(logger *slog.Logger, systemHandler *system.Handler) *Server {
 func (s *Server) Handler() stdhttp.Handler {
 	mux := stdhttp.NewServeMux()
 	system.StartSystemHandler(mux, s.handlers.System)
+	if s.handlers.API != nil {
+		apihandler.Register(mux, s.handlers.API)
+	}
 	return s.requestLogger(mux)
 }
 

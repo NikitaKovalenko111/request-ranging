@@ -86,6 +86,27 @@ func (c *Client) Assign(ctx context.Context, value AssignmentRequest) (Assignmen
 	return result, nil
 }
 
+func (c *Client) SetExecutorActive(ctx context.Context, executorID string, active bool) error {
+	body, err := json.Marshal(map[string]bool{"active": active})
+	if err != nil {
+		return err
+	}
+	request, err := http.NewRequestWithContext(ctx, http.MethodPatch, c.baseURL+"/api/v1/executors/"+url.PathEscape(executorID), bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	response, err := c.http.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+		return &APIError{StatusCode: response.StatusCode, Code: "AIS_EXECUTOR_PATCH_FAILED"}
+	}
+	return nil
+}
+
 func (c *Client) GetAssignedExecutor(ctx context.Context, orderID string) (string, error) {
 	if strings.TrimSpace(orderID) == "" {
 		return "", fmt.Errorf("order ID is required")

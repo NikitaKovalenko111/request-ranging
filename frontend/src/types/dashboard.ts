@@ -34,7 +34,7 @@ export interface TimeSeriesPoint {
 }
 
 export interface ExecutorLoadMetric {
-  executorId: number;
+  executorId: string;
   executorName: string;
   capacityWeight: number;
   confirmedWeight: number;

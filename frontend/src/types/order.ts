@@ -2,9 +2,9 @@ export type OrderStatus = 'processed' | 'await' | 'accept' | 'reject';
 export type AssignmentStatus = 'pending' | 'reserved' | 'assigned' | 'unassigned' | 'failed';
 
 export interface Order {
-  id: number;
-  parentId: number | null;
-  assignedExecutorId: number | null;
+  id: string;
+  parentId: string | null;
+  assignedExecutorId: string | null;
   assignedExecutorName: string | null;//
   sum: number | null;
   clientMsp: string | null;
@@ -39,7 +39,7 @@ export interface OrderFilters {
 }
 
 export interface OrderOption {
-  id: number;
+  id: string;
   label: string;
   status: OrderStatus;
   vip: boolean;

@@ -9,10 +9,10 @@ import { useAssignmentDetails } from '../../decision-trace/hooks/useDecisionTrac
 import { useOrder } from '../hooks/useOrders';
 
 export function OrderDetailsPage() {
-  const id = Number(useParams().id);
+  const id = useParams().id ?? '';
   const orderQuery = useOrder(id);
   const assignmentQuery = useAssignmentDetails(id);
-  if (!Number.isFinite(id)) return <EmptyState title="Некорректный ID заявки" />;
+  if (!id) return <EmptyState title="Некорректный ID заявки" />;
   if (orderQuery.isLoading) return <LoadingState rows={5} />;
   if (orderQuery.isError) { const error = orderQuery.error as unknown as ApiError; return <ErrorState message={error.message ?? 'Неизвестная ошибка'} traceId={error.traceId} onRetry={() => void orderQuery.refetch()} />; }
   const order = orderQuery.data!;

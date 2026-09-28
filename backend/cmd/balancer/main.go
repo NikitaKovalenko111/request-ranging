@@ -26,6 +26,7 @@ import (
 	orderservice "request-ranging/executor-balancer/internal/services/order"
 	systemservice "request-ranging/executor-balancer/internal/services/system"
 	httptransport "request-ranging/executor-balancer/internal/transport/http"
+	apihandler "request-ranging/executor-balancer/internal/transport/http/handlers/api"
 	systemhandler "request-ranging/executor-balancer/internal/transport/http/handlers/system"
 	kafkatransport "request-ranging/executor-balancer/internal/transport/kafka"
 	decisionhandler "request-ranging/executor-balancer/internal/transport/kafka/handlers/decision"
@@ -129,7 +130,8 @@ func run() error {
 
 	healthService := systemservice.NewHealthService(cfg.App.DependencyCheckTimeout, checkers...)
 	systemHandler := systemhandler.New(healthService)
-	transportServer := httptransport.NewServer(appLogger, systemHandler)
+	apiHandler := apihandler.New(postgresClient.DB(), redisClient.Raw(), aisClient)
+	transportServer := httptransport.NewServer(appLogger, systemHandler, apiHandler)
 	server := &http.Server{
 		Addr:              cfg.HTTP.Address,
 		Handler:           transportServer.Handler(),

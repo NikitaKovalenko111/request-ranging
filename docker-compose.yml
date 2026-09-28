@@ -42,6 +42,7 @@ services:
       KAFKA_LISTENERS: "INTERNAL://:9092,EXTERNAL://:29092,CONTROLLER://:9093"
       KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:9092,EXTERNAL://localhost:9092"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: "2"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
@@ -89,6 +90,7 @@ services:
       REDIS_ADDR: "redis:6379"
       KAFKA_BROKERS: "kafka:9092"
       KAFKA_CONSUMER_GROUP: "executor-balancer-v1"
+      KAFKA_DECISION_WORKERS: "12"
       KAFKA_ORDER_TOPIC: "ais.orders.v1"
       KAFKA_EXECUTOR_TOPIC: "ais.executors.v1"
       KAFKA_DECISION_RESULT_TOPIC: "decision.result.v1"
@@ -116,6 +118,8 @@ services:
   decision-engine:
     build:
       context: ./decision-engine
+    deploy:
+      replicas: 2
     environment:
       LOG_LEVEL: "INFO"
       KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"

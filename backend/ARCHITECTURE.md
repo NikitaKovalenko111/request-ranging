@@ -26,6 +26,8 @@ AIS Simulator → Requests Kafka → Decision Engine
 
 Rule Engine, Feature Extractor, ML Ranker и Balancer находятся внутри Python Decision Engine. Go-сервис не повторяет их расчёты и использует порядок `balanced_candidates`, полученный из `ExecutorDecisionCompleted`.
 
+В локальном окружении Decision Engine запускается в двух репликах. Обе реплики входят в consumer group `decision-engine-v1`, поэтому каждая заявка обрабатывается только одной репликой. Для параллельной работы входной topic `ais.orders.v1` должен иметь не менее двух партиций.
+
 ## 2. Структура проекта
 
 ```text
@@ -227,6 +229,7 @@ POSTGRES_DSN=postgres://executor_balancer:executor_balancer@postgres:5432/execut
 REDIS_ADDR=redis:6379
 KAFKA_BROKERS=kafka:9092
 KAFKA_CONSUMER_GROUP=executor-balancer-v1
+KAFKA_DECISION_WORKERS=12
 KAFKA_DECISION_RESULT_TOPIC=decision.result.v1
 AIS_BASE_URL=http://ais-simulator:8091
 AIS_REQUEST_TIMEOUT=12s
@@ -258,7 +261,11 @@ executor-balancer.dead-letter.v1
 - Kafka offset подтверждается только после успешного сохранения события;
 - повторное событие определяется по `event_id`;
 - повторный `ExecutorDecisionCompleted`, в котором заявка уже имеет pending или confirmed Assignment, не создаёт второе назначение;
-- consumer group Executor Balancer: `executor-balancer-v1`;
+- consumer group состояния Executor Balancer: `executor-balancer-v1`;
+- consumer group решений: `executor-balancer-v1-decisions`;
+- решения обрабатываются независимо и параллельно; размер пула задаётся
+  `KAFKA_DECISION_WORKERS` (по умолчанию `12`). Это не позволяет решению,
+  пришедшему раньше `OrderCreated`, заблокировать чтение заявки;
 - для локального демо допустимо `auto.offset.reset=earliest`;
 - автоматическое подтверждение offset необходимо отключить.
 

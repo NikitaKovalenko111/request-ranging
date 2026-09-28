@@ -59,11 +59,21 @@ func run() error {
 	redisClient := redisstorage.New(cfg.Redis.Address)
 	defer redisClient.Close()
 
-	kafkaClient, err := kafkatransport.New(cfg.Kafka.Brokers, cfg.Kafka.ConsumerGroup)
+	stateKafkaClient, err := kafkatransport.NewNamed(
+		cfg.Kafka.Brokers, cfg.Kafka.ConsumerGroup, "executor-balancer-state", "kafka-state",
+	)
 	if err != nil {
-		return fmt.Errorf("initialize kafka client: %w", err)
+		return fmt.Errorf("initialize state kafka client: %w", err)
 	}
-	defer kafkaClient.Close()
+	defer stateKafkaClient.Close()
+	decisionKafkaClient, err := kafkatransport.NewNamed(
+		cfg.Kafka.Brokers, cfg.Kafka.ConsumerGroup+"-decisions",
+		"executor-balancer-decisions", "kafka-decisions",
+	)
+	if err != nil {
+		return fmt.Errorf("initialize decision kafka client: %w", err)
+	}
+	defer decisionKafkaClient.Close()
 
 	repositories := postgresrepositories.New(postgresClient.DB())
 	bootstrapContext, cancelBootstrap := context.WithTimeout(context.Background(), cfg.App.DependencyCheckTimeout)
@@ -116,16 +126,19 @@ func run() error {
 		appLogger.Info("assignment confirmed", "order_id", result.OrderID)
 		return nil
 	})
-	kafkaHandlers := map[string]kafkatransport.MessageHandler{
-		cfg.Kafka.OrderTopic:          orderEventHandler,
-		cfg.Kafka.ExecutorTopic:       executorEventHandler,
+	stateKafkaHandlers := map[string]kafkatransport.MessageHandler{
+		cfg.Kafka.OrderTopic:    orderEventHandler,
+		cfg.Kafka.ExecutorTopic: executorEventHandler,
+	}
+	decisionKafkaHandlers := map[string]kafkatransport.MessageHandler{
 		cfg.Kafka.DecisionResultTopic: decisionHandler,
 	}
 
 	checkers := []systemservice.DependencyChecker{
 		postgresClient,
 		redisClient,
-		kafkaClient,
+		stateKafkaClient,
+		decisionKafkaClient,
 	}
 
 	healthService := systemservice.NewHealthService(cfg.App.DependencyCheckTimeout, checkers...)
@@ -151,14 +164,32 @@ func run() error {
 		appLogger.Info("http server started", "address", cfg.HTTP.Address)
 		serverErrors <- server.ListenAndServe()
 	}()
-	kafkaErrors := make(chan error, 1)
+	type consumerResult struct {
+		name string
+		err  error
+	}
+	kafkaErrors := make(chan consumerResult, 2)
 	go func() {
-		appLogger.Info("kafka consumer started",
+		appLogger.Info("state kafka consumer started",
 			"order_topic", cfg.Kafka.OrderTopic,
 			"executor_topic", cfg.Kafka.ExecutorTopic,
-			"decision_topic", cfg.Kafka.DecisionResultTopic,
 		)
-		kafkaErrors <- kafkaClient.Consume(signalContext, kafkaHandlers, cfg.Kafka.DeadLetterTopic)
+		kafkaErrors <- consumerResult{
+			name: "state",
+			err:  stateKafkaClient.Consume(signalContext, stateKafkaHandlers, cfg.Kafka.DeadLetterTopic),
+		}
+	}()
+	go func() {
+		appLogger.Info("decision kafka consumer started",
+			"decision_topic", cfg.Kafka.DecisionResultTopic,
+			"workers", cfg.Kafka.DecisionWorkers,
+		)
+		kafkaErrors <- consumerResult{
+			name: "decision",
+			err: decisionKafkaClient.ConsumeConcurrent(
+				signalContext, decisionKafkaHandlers, cfg.Kafka.DeadLetterTopic, cfg.Kafka.DecisionWorkers,
+			),
+		}
 	}()
 
 	select {
@@ -169,9 +200,9 @@ func run() error {
 			return fmt.Errorf("http server: %w", serverErr)
 		}
 		return nil
-	case consumerErr := <-kafkaErrors:
-		if consumerErr != nil {
-			return fmt.Errorf("decision consumer: %w", consumerErr)
+	case consumerResult := <-kafkaErrors:
+		if consumerResult.err != nil {
+			return fmt.Errorf("%s kafka consumer: %w", consumerResult.name, consumerResult.err)
 		}
 		return nil
 	}

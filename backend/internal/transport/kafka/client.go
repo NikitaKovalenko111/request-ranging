@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"sync"
 	"time"
 
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -13,6 +14,7 @@ import (
 
 type Client struct {
 	client *kgo.Client
+	name   string
 }
 
 type MessageHandler interface {
@@ -20,9 +22,13 @@ type MessageHandler interface {
 }
 
 func New(brokers []string, consumerGroup string) (*Client, error) {
+	return NewNamed(brokers, consumerGroup, "executor-balancer", "kafka")
+}
+
+func NewNamed(brokers []string, consumerGroup, clientID, name string) (*Client, error) {
 	client, err := kgo.NewClient(
 		kgo.SeedBrokers(brokers...),
-		kgo.ClientID("executor-balancer"),
+		kgo.ClientID(clientID),
 		kgo.ConsumerGroup(consumerGroup),
 		kgo.DisableAutoCommit(),
 		kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
@@ -30,10 +36,10 @@ func New(brokers []string, consumerGroup string) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("create kafka client: %w", err)
 	}
-	return &Client{client: client}, nil
+	return &Client{client: client, name: name}, nil
 }
 
-func (c *Client) Name() string { return "kafka" }
+func (c *Client) Name() string { return c.name }
 
 func (c *Client) Check(ctx context.Context) error {
 	if err := c.client.Ping(ctx); err != nil {
@@ -67,38 +73,111 @@ func (c *Client) Consume(ctx context.Context, handlers map[string]MessageHandler
 			if !ok {
 				return fmt.Errorf("no handler configured for Kafka topic %q", record.Topic)
 			}
-			backoff := 250 * time.Millisecond
-			for {
-				err := handler.Handle(ctx, record.Value)
-				if err == nil {
-					if commitErr := c.client.CommitRecords(ctx, record); commitErr != nil {
-						return fmt.Errorf("commit Kafka record topic=%q partition=%d offset=%d: %w",
-							record.Topic, record.Partition, record.Offset, commitErr,
-						)
-					}
-					break
-				}
-
-				permanent := new(PermanentError)
-				if errors.As(err, &permanent) {
-					if dlqErr := c.sendDeadLetter(ctx, deadLetterTopic, record, err); dlqErr != nil {
-						return dlqErr
-					}
-					if commitErr := c.client.CommitRecords(ctx, record); commitErr != nil {
-						return fmt.Errorf("commit dead-lettered Kafka record: %w", commitErr)
-					}
-					break
-				}
-
-				if err := waitForRetry(ctx, backoff); err != nil {
+			if err := c.processRecord(ctx, handler, deadLetterTopic, record); err != nil {
+				if ctx.Err() != nil {
 					return nil
 				}
-				if backoff < 5*time.Second {
-					backoff *= 2
-					if backoff > 5*time.Second {
-						backoff = 5 * time.Second
-					}
+				return err
+			}
+			if commitErr := c.client.CommitRecords(ctx, record); commitErr != nil {
+				return fmt.Errorf("commit Kafka record topic=%q partition=%d offset=%d: %w",
+					record.Topic, record.Partition, record.Offset, commitErr,
+				)
+			}
+		}
+	}
+}
+
+// ConsumeConcurrent processes a fetched batch in parallel and commits it only
+// after every record has completed. A crash can redeliver the whole batch;
+// handlers therefore remain idempotent.
+func (c *Client) ConsumeConcurrent(
+	ctx context.Context,
+	handlers map[string]MessageHandler,
+	deadLetterTopic string,
+	workers int,
+) error {
+	if len(handlers) == 0 {
+		return fmt.Errorf("consume Kafka: at least one topic handler is required")
+	}
+	if workers <= 0 {
+		return fmt.Errorf("consume Kafka: workers must be positive")
+	}
+	topics := make([]string, 0, len(handlers))
+	for topic := range handlers {
+		topics = append(topics, topic)
+	}
+	sort.Strings(topics)
+	c.client.AddConsumeTopics(topics...)
+
+	for {
+		fetches := c.client.PollRecords(ctx, workers)
+		if ctx.Err() != nil {
+			return nil
+		}
+		if fetchErrors := fetches.Errors(); len(fetchErrors) > 0 {
+			return fmt.Errorf("poll Kafka: %v", fetchErrors[0].Err)
+		}
+		records := fetches.Records()
+		if len(records) == 0 {
+			continue
+		}
+
+		errorsChannel := make(chan error, len(records))
+		var waitGroup sync.WaitGroup
+		for _, record := range records {
+			handler, ok := handlers[record.Topic]
+			if !ok {
+				return fmt.Errorf("no handler configured for Kafka topic %q", record.Topic)
+			}
+			waitGroup.Add(1)
+			go func(record *kgo.Record, handler MessageHandler) {
+				defer waitGroup.Done()
+				errorsChannel <- c.processRecord(ctx, handler, deadLetterTopic, record)
+			}(record, handler)
+		}
+		waitGroup.Wait()
+		close(errorsChannel)
+		for processingError := range errorsChannel {
+			if processingError != nil {
+				if ctx.Err() != nil {
+					return nil
 				}
+				return processingError
+			}
+		}
+		if commitErr := c.client.CommitRecords(ctx, records...); commitErr != nil {
+			return fmt.Errorf("commit concurrent Kafka batch: %w", commitErr)
+		}
+	}
+}
+
+func (c *Client) processRecord(
+	ctx context.Context,
+	handler MessageHandler,
+	deadLetterTopic string,
+	record *kgo.Record,
+) error {
+	backoff := 250 * time.Millisecond
+	for {
+		err := handler.Handle(ctx, record.Value)
+		if err == nil {
+			return nil
+		}
+		permanent := new(PermanentError)
+		if errors.As(err, &permanent) {
+			if dlqErr := c.sendDeadLetter(ctx, deadLetterTopic, record, err); dlqErr != nil {
+				return dlqErr
+			}
+			return nil
+		}
+		if err := waitForRetry(ctx, backoff); err != nil {
+			return err
+		}
+		if backoff < 5*time.Second {
+			backoff *= 2
+			if backoff > 5*time.Second {
+				backoff = 5 * time.Second
 			}
 		}
 	}

@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -12,6 +13,7 @@ type KafkaConfig struct {
 	ExecutorTopic       string
 	DecisionResultTopic string
 	DeadLetterTopic     string
+	DecisionWorkers     int
 }
 
 func loadKafkaConfig() (KafkaConfig, error) {
@@ -22,6 +24,14 @@ func loadKafkaConfig() (KafkaConfig, error) {
 		ExecutorTopic:       envOrDefault("KAFKA_EXECUTOR_TOPIC", "ais.executors.v1"),
 		DecisionResultTopic: envOrDefault("KAFKA_DECISION_RESULT_TOPIC", "decision.result.v1"),
 		DeadLetterTopic:     envOrDefault("KAFKA_DEAD_LETTER_TOPIC", "executor-balancer.dead-letter.v1"),
+		DecisionWorkers:     12,
+	}
+	if raw := strings.TrimSpace(envOrDefault("KAFKA_DECISION_WORKERS", "12")); raw != "" {
+		workers, err := strconv.Atoi(raw)
+		if err != nil || workers < 1 || workers > 100 {
+			return KafkaConfig{}, fmt.Errorf("KAFKA_DECISION_WORKERS must be an integer between 1 and 100")
+		}
+		config.DecisionWorkers = workers
 	}
 	if len(config.Brokers) == 0 {
 		return KafkaConfig{}, fmt.Errorf("KAFKA_BROKERS must contain at least one broker")

@@ -32,6 +32,17 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Kafka.DeadLetterTopic != "executor-balancer.dead-letter.v1" {
 		t.Fatalf("Kafka.DeadLetterTopic = %q", cfg.Kafka.DeadLetterTopic)
 	}
+	if cfg.Kafka.DecisionWorkers != 12 {
+		t.Fatalf("Kafka.DecisionWorkers = %d, want 12", cfg.Kafka.DecisionWorkers)
+	}
+}
+
+func TestLoadRejectsInvalidDecisionWorkers(t *testing.T) {
+	clearEnvironment(t)
+	t.Setenv("KAFKA_DECISION_WORKERS", "0")
+	if _, err := Load(); err == nil {
+		t.Fatal("Load() error = nil, want invalid decision worker count")
+	}
 }
 
 func TestLoadRejectsInvalidDuration(t *testing.T) {
@@ -60,6 +71,7 @@ func clearEnvironment(t *testing.T) {
 		"APP_HTTP_ADDR", "LOG_LEVEL", "POSTGRES_DSN", "REDIS_ADDR",
 		"KAFKA_BROKERS", "KAFKA_CONSUMER_GROUP", "KAFKA_ORDER_TOPIC", "KAFKA_EXECUTOR_TOPIC",
 		"KAFKA_DECISION_RESULT_TOPIC", "KAFKA_DEAD_LETTER_TOPIC", "AIS_BASE_URL", "AIS_REQUEST_TIMEOUT",
+		"KAFKA_DECISION_WORKERS",
 		"RESERVATION_TTL", "SHUTDOWN_TIMEOUT", "DEPENDENCY_CHECK_TIMEOUT",
 		"HTTP_READ_HEADER_TIMEOUT", "HTTP_READ_TIMEOUT", "HTTP_WRITE_TIMEOUT", "HTTP_IDLE_TIMEOUT",
 	}

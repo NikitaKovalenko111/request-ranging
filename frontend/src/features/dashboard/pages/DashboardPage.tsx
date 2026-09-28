@@ -6,7 +6,7 @@ import { exportDashboardCsv, exportDashboardXlsx } from '../../../api/dashboard'
 import { useMockData } from '../../../api/dataSource';
 import { DataFreshness } from '../../../shared/components/DataFreshness';
 import { EmptyState, ErrorState, LoadingState } from '../../../shared/components/StateViews';
-import { formatDuration, formatNumber } from '../../../shared/format';
+import { formatNumber, formatSeconds } from '../../../shared/format';
 import { useDashboardRealtime } from '../../../shared/hooks/useDashboardRealtime';
 import { ExecutorLoadChart } from '../components/ExecutorLoadChart';
 import { FairnessCard } from '../components/FairnessCard';
@@ -21,8 +21,6 @@ const toLocalInput = (date: Date) => {
 };
 
 const initialFilters: DashboardFilters = {
-  from: new Date(Date.now() - 60 * 60_000).toISOString(),
-  to: new Date().toISOString(),
   bucket: 'minute',
 };
 
@@ -43,8 +41,8 @@ export function DashboardPage() {
   return <div className="page-stack">
     <div className="page-actions"><div><h2 className="page-lead">Распределение в реальном времени</h2><p>Поток заявок, скорость решений и баланс нагрузки.</p></div><div className="action-row"><DataFreshness updatedAt={query.dataUpdatedAt || undefined} fetching={query.isFetching} />{query.data && <><button className="button secondary" onClick={() => exportDashboardCsv(query.data)}><Download size={16} />CSV</button><button className="button secondary" disabled={exporting} onClick={() => void exportXlsx()}><FileSpreadsheet size={16} />{exporting ? 'Формируем…' : 'XLSX'}</button></>}</div></div>
     <section className="dashboard-controls panel">
-      <label><span>С</span><input type="datetime-local" value={filters.from ? toLocalInput(new Date(filters.from)) : ''} onChange={(event) => setDate('from', event.target.value)} /></label>
-      <label><span>По</span><input type="datetime-local" value={filters.to ? toLocalInput(new Date(filters.to)) : ''} onChange={(event) => setDate('to', event.target.value)} /></label>
+      <label><span>С (час назад)</span><input type="datetime-local" value={filters.from ? toLocalInput(new Date(filters.from)) : ''} onChange={(event) => setDate('from', event.target.value)} /></label>
+      <label><span>По (сейчас)</span><input type="datetime-local" value={filters.to ? toLocalInput(new Date(filters.to)) : ''} onChange={(event) => setDate('to', event.target.value)} /></label>
       <label><span>Группировка</span><select value={filters.bucket} onChange={(event) => setFilters((current) => ({ ...current, bucket: event.target.value as DashboardFilters['bucket'] }))}><option value="minute">По минутам</option><option value="hour">По часам</option><option value="day">По дням</option></select></label>
       {useMockData && <label><span>Mock-сценарий</span><select value={scenario} onChange={(event) => setScenario(event.target.value as MockScenario)}><option value="normal">Нормальная нагрузка</option><option value="high-throughput">Высокий throughput</option><option value="empty">Пустой период</option><option value="error">Ошибка API</option></select></label>}
     </section>
@@ -60,8 +58,8 @@ function DashboardContent({ data }: { data: DashboardData }) {
       <KpiCard label="Назначено" value={formatNumber(summary.assignedOrders)} icon={UserCheck} tone="blue" />
       <KpiCard label="Не назначено" value={formatNumber(summary.unassignedOrders)} icon={Activity} tone="rose" />
       <KpiCard label="Активные исполнители" value={formatNumber(summary.activeExecutors)} icon={Gauge} tone="violet" />
-      <KpiCard label="Среднее время" value={formatDuration(summary.averageAssignmentTimeMs)} icon={Clock3} tone="amber" hint="Среднее время от получения заявки до результата назначения." />
-      <KpiCard label="p95 времени" value={formatDuration(summary.p95AssignmentTimeMs)} icon={CircleGauge} tone="cyan" hint="95% решений принимаются не дольше указанного времени." />
+      <KpiCard label="Среднее время" value={formatSeconds(summary.averageAssignmentTimeMs)} icon={Clock3} tone="amber" hint="Среднее время от получения заявки до результата назначения, в секундах." />
+      <KpiCard label="p95 времени" value={formatSeconds(summary.p95AssignmentTimeMs)} icon={CircleGauge} tone="cyan" hint="95% решений принимаются не дольше указанного времени, в секундах." />
       <KpiCard label="Throughput" value={formatNumber(summary.ordersPerSecond)} unit="заявок/с" icon={Zap} tone="teal" />
       <KpiCard label="Ожидают подтверждения" value={formatNumber(summary.pendingAssignments)} icon={Activity} tone="amber" />
     </section>

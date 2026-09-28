@@ -11,6 +11,7 @@ export function ExecutorDetailsDrawer({
     executor: Executor | null;
     onClose: () => void;
 }) {
+    const lastAssignmentAt = executor ? formatDate(executor.lastAssignmentAt) : '';
     return (
         <Drawer
             open={!!executor}
@@ -58,7 +59,7 @@ export function ExecutorDetailsDrawer({
                     </div>
                     <div>
                         <dt>Последнее назначение</dt>
-                        <dd>{formatDate(executor.lastAssignmentAt)}</dd>
+                        <dd className="assignment-time" title={lastAssignmentAt}>{lastAssignmentAt}</dd>
                     </div>
                     <div style={{ gridColumn: '1 / -1' }}>
                         <dt>Формула</dt>

@@ -983,6 +983,7 @@ select {
 }
 
 .details-grid>div {
+  min-width: 0;
   padding: 13px;
   background: #fbfdfe;
 }
@@ -997,6 +998,14 @@ select {
   color: #29465d;
   font-size: .78rem;
   overflow-wrap: anywhere;
+}
+
+.assignment-time {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .details-grid.compact {

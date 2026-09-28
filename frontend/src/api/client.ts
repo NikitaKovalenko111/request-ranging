@@ -40,6 +40,7 @@ async function request<T>(
     response = await fetch(`${env.apiBaseUrl}${path}`, {
       method,
       signal: controller.signal,
+      cache: method === 'GET' ? 'no-store' : undefined,
       headers: {
         Accept: 'application/json',
         ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),

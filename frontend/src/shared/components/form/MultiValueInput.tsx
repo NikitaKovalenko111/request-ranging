@@ -8,6 +8,7 @@ interface Props {
     invalid?: boolean;
     disabled?: boolean;
     minItems?: number;
+    maxItems?: number;
     numeric?: boolean;
 }
 
@@ -17,6 +18,7 @@ export function MultiValueInput({
     invalid,
     disabled,
     minItems = 1,
+    maxItems,
     numeric = false,
 }: Props) {
     const [draft, setDraft] = useState('');
@@ -24,8 +26,11 @@ export function MultiValueInput({
     const add = () => {
         const t = draft.trim();
         if (!t) return;
+        if (maxItems !== undefined && values.length >= maxItems) return;
+
         const value: string | number = numeric ? Number(t) : t;
         if (numeric && !Number.isFinite(value as number)) return;
+
         onChange([...values, value]);
         setDraft('');
     };
@@ -33,6 +38,11 @@ export function MultiValueInput({
     const remove = (idx: number) => {
         onChange(values.filter((_, i) => i !== idx));
     };
+
+    const canAdd =
+        !disabled &&
+        draft.trim().length > 0 &&
+        (maxItems === undefined || values.length < maxItems);
 
     return (
         <div className="multi-value">
@@ -56,7 +66,7 @@ export function MultiValueInput({
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
                     invalid={invalid}
-                    disabled={disabled}
+                    disabled={disabled || (maxItems !== undefined && values.length >= maxItems)}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             e.preventDefault();
@@ -64,7 +74,7 @@ export function MultiValueInput({
                         }
                     }}
                 />
-                <Button type="button" variant="secondary" onClick={add} disabled={disabled || !draft.trim()}>
+                <Button type="button" variant="secondary" onClick={add} disabled={!canAdd}>
                     Добавить
                 </Button>
             </div>

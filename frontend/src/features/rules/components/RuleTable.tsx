@@ -1,3 +1,4 @@
+import { RulePriorityControl } from './RulePriorityControl';
 import { Switch } from '../../../shared/components/Switch';
 import { Button } from '../../../shared/components/Button';
 import { RuleHumanReadable } from './RuleHumanReadable';
@@ -12,6 +13,7 @@ export function RuleTable({
     onEdit,
     onDelete,
     onTest,
+    onPriorityChange,
     pendingId,
 }: {
     items: Rule[];
@@ -21,6 +23,7 @@ export function RuleTable({
     onEdit: (r: Rule) => void;
     onDelete: (r: Rule) => void;
     onTest: (r: Rule) => void;
+    onPriorityChange?: (r: Rule, priority: number) => void;
     pendingId: string | null;
 }) {
     return (
@@ -41,11 +44,21 @@ export function RuleTable({
                         {items.map((r) => (
                             <tr key={r.id}>
                                 <td>
-                                    <strong>{r.priority}</strong>
+                                    {onPriorityChange ? (
+                                        <RulePriorityControl
+                                            value={r.priority}
+                                            onChange={(v) => onPriorityChange(r, v)}
+                                            disabled={pendingId === r.id}
+                                        />
+                                    ) : (
+                                        <strong>{r.priority}</strong>
+                                    )}
                                 </td>
                                 <td>
                                     <strong>{r.name}</strong>
-                                    {r.description ? <small className="cell-meta">{r.description}</small> : null}
+                                    {r.description ? (
+                                        <small className="cell-meta">{r.description}</small>
+                                    ) : null}
                                 </td>
                                 <td>
                                     <RuleHumanReadable

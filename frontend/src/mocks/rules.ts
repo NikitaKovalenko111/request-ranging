@@ -64,4 +64,42 @@ export const mockRules: Rule[] = [
     updatedAt: '2026-09-23T10:00:00Z',
     version: 1,
   },
+  {
+    id: 'rule-between',
+    name: 'Сумма от 1000 до 5000',
+    description: 'Правило применяется к заявкам со суммой в диапазоне',
+    when: [],
+    requirements: [
+      {
+        left: { type: 'FIELD', source: 'ORDER', field: 'sum' },
+        operator: 'BETWEEN',
+        right: { type: 'CONSTANT', value: [1000, 5000] },
+      },
+    ],
+    logic: 'AND',
+    priority: 40,
+    active: true,
+    createdAt: '2026-09-22T10:00:00Z',
+    updatedAt: '2026-09-22T10:00:00Z',
+    version: 1,
+  },
+  {
+    id: 'rule-not-in',
+    name: 'Исключить типы',
+    description: 'Тип заявки не должен быть ORDER_3',
+    when: [],
+    requirements: [
+      {
+        left: { type: 'FIELD', source: 'ORDER', field: 'orderType' },
+        operator: 'NOT_IN',
+        right: { type: 'CONSTANT', value: ['ORDER_3'] },
+      },
+    ],
+    logic: 'AND',
+    priority: 50,
+    active: true,
+    createdAt: '2026-09-22T11:00:00Z',
+    updatedAt: '2026-09-22T11:00:00Z',
+    version: 1,
+  },
 ];

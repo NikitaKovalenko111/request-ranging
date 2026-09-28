@@ -6,7 +6,7 @@ import { exportDashboardCsv, exportDashboardXlsx } from '../../../api/dashboard'
 import { useMockData } from '../../../api/dataSource';
 import { DataFreshness } from '../../../shared/components/DataFreshness';
 import { EmptyState, ErrorState, LoadingState } from '../../../shared/components/StateViews';
-import { formatNumber, formatSeconds } from '../../../shared/format';
+import { formatDuration, formatNumber } from '../../../shared/format';
 import { useDashboardRealtime } from '../../../shared/hooks/useDashboardRealtime';
 import { ExecutorLoadChart } from '../components/ExecutorLoadChart';
 import { FairnessCard } from '../components/FairnessCard';
@@ -58,8 +58,8 @@ function DashboardContent({ data }: { data: DashboardData }) {
       <KpiCard label="Назначено" value={formatNumber(summary.assignedOrders)} icon={UserCheck} tone="blue" />
       <KpiCard label="Не назначено" value={formatNumber(summary.unassignedOrders)} icon={Activity} tone="rose" />
       <KpiCard label="Активные исполнители" value={formatNumber(summary.activeExecutors)} icon={Gauge} tone="violet" />
-      <KpiCard label="Среднее время" value={formatSeconds(summary.averageAssignmentTimeMs)} icon={Clock3} tone="amber" hint="Среднее время от получения заявки до результата назначения, в секундах." />
-      <KpiCard label="p95 времени" value={formatSeconds(summary.p95AssignmentTimeMs)} icon={CircleGauge} tone="cyan" hint="95% решений принимаются не дольше указанного времени, в секундах." />
+      <KpiCard label="Среднее время" value={formatDuration(summary.averageAssignmentTimeMs)} icon={Clock3} tone="amber" hint="Средняя длительность обработки решения. Backend измеряет её в миллисекундах." />
+      <KpiCard label="p95 времени" value={formatDuration(summary.p95AssignmentTimeMs)} icon={CircleGauge} tone="cyan" hint="95% решений принимаются не дольше указанного времени. Backend измеряет его в миллисекундах." />
       <KpiCard label="Throughput" value={formatNumber(summary.ordersPerSecond)} unit="заявок/с" icon={Zap} tone="teal" />
       <KpiCard label="Ожидают подтверждения" value={formatNumber(summary.pendingAssignments)} icon={Activity} tone="amber" />
     </section>

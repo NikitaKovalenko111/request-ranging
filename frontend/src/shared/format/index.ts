@@ -6,7 +6,6 @@ export const formatNumber = (value: number | null | undefined) => value == null 
 export const formatMoney = (value: number | null | undefined) => value == null ? 'Не указана' : ruMoney.format(value);
 export const formatDateTime = (value: string | null | undefined) => value ? ruDateTime.format(new Date(value)) : 'Нет данных';
 export const formatDuration = (value: number | null | undefined) => value == null ? 'Нет данных' : value < 1000 ? `${formatNumber(value)} мс` : `${formatNumber(value / 1000)} с`;
-export const formatSeconds = (value: number | null | undefined) => value == null ? 'Нет данных' : `${formatNumber(value)} с`;
 export const formatPercent = (value: number | null | undefined) => value == null ? 'Нет данных' : `${ruNumber.format(value * 100)}%`;
 export const formatBoolean = (value: boolean | null | undefined) => value == null ? 'Нет данных' : value ? 'Да' : 'Нет';
 

@@ -50,8 +50,8 @@ export function exportDashboardCsv(data: DashboardData): void {
     ['Summary', 'Назначено', data.summary.assignedOrders],
     ['Summary', 'Не назначено', data.summary.unassignedOrders],
     ['Summary', 'Активные исполнители', data.summary.activeExecutors],
-    ['Summary', 'Среднее время, с', data.summary.averageAssignmentTimeMs],
-    ['Summary', 'p95, с', data.summary.p95AssignmentTimeMs],
+    ['Summary', 'Среднее время, мс', data.summary.averageAssignmentTimeMs],
+    ['Summary', 'p95, мс', data.summary.p95AssignmentTimeMs],
     ['Summary', `Fairness ${data.fairness.kind}`, data.fairness.value],
     [],
     ['Assignments', 'orderId', 'executorId', 'executorName', 'status', 'processingTimeMs', 'createdAt', 'confirmedAt'],
@@ -77,7 +77,7 @@ export async function exportDashboardXlsx(data: DashboardData): Promise<void> {
     ['Показатель', 'Значение'],
     ['Период с', data.summary.periodFrom], ['Период по', data.summary.periodTo], ['Сформировано', data.summary.generatedAt],
     ['Всего заявок', data.summary.totalOrders], ['Назначено', data.summary.assignedOrders], ['Не назначено', data.summary.unassignedOrders],
-    ['Активные исполнители', data.summary.activeExecutors], ['Среднее время, с', data.summary.averageAssignmentTimeMs], ['p95, с', data.summary.p95AssignmentTimeMs],
+    ['Активные исполнители', data.summary.activeExecutors], ['Среднее время, мс', data.summary.averageAssignmentTimeMs], ['p95, мс', data.summary.p95AssignmentTimeMs],
     ['Fairness type', data.fairness.kind], ['Fairness value', data.fairness.value], ['Fairness target', data.fairness.target],
   ]);
   const assignments = rows([

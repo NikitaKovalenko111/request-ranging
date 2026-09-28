@@ -104,14 +104,18 @@ class ClientMspRule:
     code: str = "client_msp"
 
     def evaluate(self, order: Order, executor: Executor) -> RuleViolation | None:
+        expected_values = executor.settings.client_msps
         expected = executor.settings.client_msp
-        if expected is None or order.client_msp == expected:
+        if expected_values:
+            if order.client_msp in expected_values:
+                return None
+        elif expected is None or order.client_msp == expected:
             return None
         return _violation(
             self.code,
             "client_msp does not match executor settings",
             actual=order.client_msp,
-            expected=expected,
+            expected=list(expected_values) if expected_values else expected,
         )
 
 
@@ -120,14 +124,18 @@ class ExecutorMspRule:
     code: str = "executor_msp"
 
     def evaluate(self, order: Order, executor: Executor) -> RuleViolation | None:
+        expected_values = executor.settings.executor_msps
         expected = executor.settings.executor_msp
-        if expected is None or order.executor_msp == expected:
+        if expected_values:
+            if order.executor_msp in expected_values:
+                return None
+        elif expected is None or order.executor_msp == expected:
             return None
         return _violation(
             self.code,
             "executor_msp does not match executor settings",
             actual=order.executor_msp,
-            expected=expected,
+            expected=list(expected_values) if expected_values else expected,
         )
 
 
@@ -136,14 +144,20 @@ class OrderTypeRule:
     code: str = "order_type"
 
     def evaluate(self, order: Order, executor: Executor) -> RuleViolation | None:
+        expected_values = executor.settings.order_types
         expected = executor.settings.order_type
-        if order.order_type is expected:
+        if expected_values:
+            if order.order_type in expected_values:
+                return None
+        elif expected is None or order.order_type == expected:
             return None
         return _violation(
             self.code,
             "order type is not supported by executor",
             actual=order.order_type.value,
-            expected=expected.value,
+            expected=[item.value for item in expected_values] if expected_values else (
+                expected.value if expected is not None else None
+            ),
         )
 
 
@@ -152,14 +166,18 @@ class SubjectRule:
     code: str = "subject"
 
     def evaluate(self, order: Order, executor: Executor) -> RuleViolation | None:
+        expected_values = executor.settings.subjects
         expected = executor.settings.subject
-        if expected is None or order.subject == expected:
+        if expected_values:
+            if str(order.subject) in expected_values:
+                return None
+        elif expected is None or order.subject == expected:
             return None
         return _violation(
             self.code,
             "order subject is not supported by executor",
             actual=str(order.subject),
-            expected=str(expected),
+            expected=list(expected_values) if expected_values else str(expected),
         )
 
 
@@ -184,3 +202,15 @@ SYSTEM_RULES: tuple[Rule, ...] = (
 # Kept as the public default for backwards compatibility. Configurable business
 # constraints are loaded as dynamic JSON rules and are intentionally not here.
 DEFAULT_RULES = SYSTEM_RULES
+
+BUSINESS_RULES: tuple[Rule, ...] = (
+    AcceptedAmountRule(),
+    RejectedAmountRule(),
+    ClientMspRule(),
+    ExecutorMspRule(),
+    OrderTypeRule(),
+    SubjectRule(),
+    VipRule(),
+)
+
+INTEGRATION_RULES: tuple[Rule, ...] = SYSTEM_RULES + BUSINESS_RULES

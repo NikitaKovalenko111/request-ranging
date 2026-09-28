@@ -27,6 +27,7 @@ feature-extractor = [
 ]
 
 [project.scripts]
+decision-engine-worker = 'decision_engine.runtime.main:run'
 decision-rule-worker = 'decision_engine.rule_engine.main:run'
 decision-ranker-train = 'decision_engine.ml_ranker.train:main'
 decision-ranker-demo = 'decision_engine.ml_ranker.inference:main'

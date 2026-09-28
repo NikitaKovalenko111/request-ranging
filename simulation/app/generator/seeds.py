@@ -416,6 +416,13 @@ async def seed_database(session: AsyncSession, seed_orders: bool = False):
     else:
         logger.info(f"Database already seeded with {count} executors.")
 
+    # Publish a complete startup snapshot even when the SQLite volume already
+    # existed. This lets a fresh backend/PostgreSQL/Redis state recover without
+    # requiring manual executor updates in the simulator.
+    all_executors = await repo.list_executors(limit=1000)
+    for executor in all_executors:
+        await kafka_producer.publish_executor_updated(executor.to_dict())
+
     if seed_orders:
         order_repo = OrderRepository(session)
         order_count = await order_repo.count_orders()

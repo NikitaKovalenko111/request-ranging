@@ -2,6 +2,7 @@ package executors
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -75,9 +76,14 @@ func writeActive(ctx context.Context, pipe redisclient.Pipeliner, key string, va
 	if value.LastAssignmentAt != nil {
 		lastAssignmentAt = value.LastAssignmentAt.UTC().Format(time.RFC3339Nano)
 	}
+	skills, _ := json.Marshal(value.Skills)
+	attributes, _ := json.Marshal(value.Attributes)
 	pipe.HSet(ctx, key, map[string]any{
 		"active":     boolAsInt(value.Active),
 		"capacity":   strconv.FormatFloat(value.Capacity, 'f', -1, 64),
+		"version":    value.Version,
+		"skills":     string(skills),
+		"attributes": string(attributes),
 		"updated_at": time.Now().UTC().Format(time.RFC3339Nano),
 	})
 	pipe.HSetNX(ctx, key, "current_load", strconv.FormatFloat(value.CurrentLoad, 'f', -1, 64))

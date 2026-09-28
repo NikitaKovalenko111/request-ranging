@@ -34,13 +34,13 @@ class PipelineOrder:
     timestamp: datetime
     sum: int
     order_type: OrderType
-    subject: UUID
+    subject: UUID | str
     status: OrderStatus
     complexity: float | None = None
     urgency: float | None = None
     weight: float = 1.0
-    parent_id: int | None = None
-    user_id: int | None = None
+    parent_id: int | str | None = None
+    user_id: int | str | None = None
     client_msp: str | None = None
     executor_msp: str | None = None
     vip: bool = False
@@ -85,7 +85,7 @@ class PipelineOrder:
 class ExecutorProfile:
     '''Rule settings, ranking features and capacity for one executor.'''
 
-    user_id: int
+    user_id: int | str
     settings: ExecutorSettings
     experience_score: float
     speed_score: float
@@ -173,7 +173,10 @@ class DecisionPipeline:
             (profile.as_rule_executor() for profile in executors),
             dynamic_rules,
         )
-        eligible = [profiles[executor_id] for executor_id in rule_result.eligible_executor_ids]
+        eligible = [
+            profiles[str(executor_id)]
+            for executor_id in rule_result.eligible_executor_ids
+        ]
         extracted_features = self._feature_extractor.extract(
             FeatureExtractionRequest(
                 order_id=order.id,
@@ -205,7 +208,7 @@ class DecisionPipeline:
             BalancerCandidate(
                 executor_id=item.executor_id,
                 ml_score=item.score,
-                capacity=profiles[int(item.executor_id)].capacity,
+                capacity=profiles[str(item.executor_id)].capacity,
             )
             for item in ml_ranking
         ]
@@ -224,8 +227,8 @@ class DecisionPipeline:
         return result
 
     @staticmethod
-    def _index_profiles(executors: Sequence[ExecutorProfile]) -> dict[int, ExecutorProfile]:
-        profiles = {executor.user_id: executor for executor in executors}
+    def _index_profiles(executors: Sequence[ExecutorProfile]) -> dict[str, ExecutorProfile]:
+        profiles = {str(executor.user_id): executor for executor in executors}
         if len(profiles) != len(executors):
             raise ValueError('executor user_ids must be unique within an order')
         return profiles

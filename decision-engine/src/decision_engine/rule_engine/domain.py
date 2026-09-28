@@ -21,6 +21,9 @@ class OrderType(StrEnum):
     ORDER_1 = "ORDER_1"
     ORDER_2 = "ORDER_2"
     ORDER_3 = "ORDER_3"
+    LEGAL_REVIEW = "LEGAL_REVIEW"
+    CONSULTATION = "CONSULTATION"
+    CLAIM_PROCESSING = "CLAIM_PROCESSING"
 
     @classmethod
     def parse(cls, value: object) -> OrderType:
@@ -75,15 +78,30 @@ def _as_bool(value: object, field_name: str) -> bool:
     raise DomainValidationError(f"{field_name} must be a boolean")
 
 
+def _string_tuple(value: object) -> tuple[str, ...]:
+    if value is None:
+        return ()
+    values = value if isinstance(value, (list, tuple, set)) else (value,)
+    result = tuple(str(item).strip() for item in values if str(item).strip())
+    return tuple(dict.fromkeys(result))
+
+
+def _optional_scalar_string(value: object) -> str | None:
+    if value is None or isinstance(value, (list, tuple, set)):
+        return None
+    result = str(value).strip()
+    return result or None
+
+
 @dataclass(frozen=True, slots=True)
 class Order:
     id: str
     sum: int
     order_type: OrderType
-    subject: UUID
+    subject: UUID | str
     status: OrderStatus
-    parent_id: int | None = None
-    user_id: int | None = None
+    parent_id: int | str | None = None
+    user_id: int | str | None = None
     client_msp: str | None = None
     executor_msp: str | None = None
     vip: bool = False
@@ -97,14 +115,18 @@ class Order:
     def from_dict(cls, data: Mapping[str, Any]) -> Order:
         try:
             status = OrderStatus(str(_required(data, "status")).lower())
-            subject = UUID(str(_required(data, "subject")))
+            subject_value = _required(data, "subject")
+            try:
+                subject: UUID | str = UUID(str(subject_value))
+            except ValueError:
+                subject = _required_str(data, "subject")
         except ValueError as error:
             raise DomainValidationError(str(error)) from error
 
         return cls(
             id=_required_str(data, "id"),
-            parent_id=_optional_int(data.get("parent_id"), "parent_id"),
-            user_id=_optional_int(data.get("user_id"), "user_id"),
+            parent_id=data.get("parent_id"),
+            user_id=data.get("user_id"),
             sum=_required_int(data, "sum"),
             client_msp=data.get("client_msp"),
             executor_msp=data.get("executor_msp"),
@@ -118,24 +140,41 @@ class Order:
 
 @dataclass(frozen=True, slots=True)
 class ExecutorSettings:
-    order_type: OrderType
+    order_type: OrderType | None = None
     min_accept_sum: int | None = None
     max_accept_sum: int | None = None
     min_reject_sum: int | None = None
     max_reject_sum: int | None = None
     client_msp: str | None = None
     executor_msp: str | None = None
-    subject: UUID | None = None
+    subject: UUID | str | None = None
     vip: bool = False
     max_daily_limit: int | None = None
+    order_types: tuple[OrderType, ...] = ()
+    client_msps: tuple[str, ...] = ()
+    executor_msps: tuple[str, ...] = ()
+    subjects: tuple[str, ...] = ()
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> ExecutorSettings:
         subject_value = data.get("subject")
-        try:
-            subject = UUID(str(subject_value)) if subject_value is not None else None
-        except ValueError as error:
-            raise DomainValidationError(f"invalid settings subject: {subject_value!r}") from error
+        if subject_value is None:
+            subject: UUID | str | None = None
+        else:
+            try:
+                subject = UUID(str(subject_value))
+            except ValueError:
+                subject = str(subject_value).strip() or None
+
+        order_type_value = data.get("order_type")
+        order_types = tuple(
+            OrderType.parse(item) for item in _string_tuple(data.get("order_types"))
+        )
+        order_type = (
+            OrderType.parse(order_type_value)
+            if order_type_value is not None
+            else (order_types[0] if order_types else None)
+        )
 
         max_daily_limit = _optional_int(data.get("max_daily_limit"), "max_daily_limit")
         if max_daily_limit is not None and max_daily_limit < 0:
@@ -146,25 +185,29 @@ class ExecutorSettings:
             max_accept_sum=_optional_int(data.get("max_accept_sum"), "max_accept_sum"),
             min_reject_sum=_optional_int(data.get("min_reject_sum"), "min_reject_sum"),
             max_reject_sum=_optional_int(data.get("max_reject_sum"), "max_reject_sum"),
-            client_msp=data.get("client_msp"),
-            executor_msp=data.get("executor_msp"),
-            order_type=OrderType.parse(_required(data, "order_type")),
+            client_msp=_optional_scalar_string(data.get("client_msp")),
+            executor_msp=_optional_scalar_string(data.get("executor_msp")),
+            order_type=order_type,
             subject=subject,
-            vip=_as_bool(data.get("vip", False), "settings.vip"),
+            vip=_as_bool(data.get("vip", data.get("vip_allowed", False)), "settings.vip"),
             max_daily_limit=max_daily_limit,
+            order_types=order_types,
+            client_msps=_string_tuple(data.get("client_msp")),
+            executor_msps=_string_tuple(data.get("executor_msp")),
+            subjects=_string_tuple(data.get("subjects")),
         )
 
 
 @dataclass(frozen=True, slots=True)
 class Executor:
-    user_id: int
+    user_id: int | str
     settings: ExecutorSettings
     active: bool = True
     daily_count: int = 0
 
     @classmethod
     def from_dict(
-        cls, data: Mapping[str, Any], *, fallback_user_id: int | None = None
+        cls, data: Mapping[str, Any], *, fallback_user_id: int | str | None = None
     ) -> Executor:
         user_id = data.get("user_id", data.get("id", fallback_user_id))
         if user_id is None:
@@ -179,8 +222,13 @@ class Executor:
         if daily_count < 0:
             raise DomainValidationError("daily_count cannot be negative")
 
-        parsed_user_id = _optional_int(user_id, "user_id")
-        assert parsed_user_id is not None
+        parsed_user_id: int | str
+        if isinstance(user_id, int) and not isinstance(user_id, bool):
+            parsed_user_id = user_id
+        else:
+            parsed_user_id = str(user_id).strip()
+            if not parsed_user_id:
+                raise DomainValidationError("executor user_id cannot be empty")
 
         return cls(
             user_id=parsed_user_id,
@@ -202,7 +250,7 @@ class RuleViolation:
 
 @dataclass(frozen=True, slots=True)
 class CandidateDecision:
-    executor_id: int
+    executor_id: int | str
     eligible: bool
     violations: tuple[RuleViolation, ...] = ()
     traces: tuple[Any, ...] = ()
@@ -237,7 +285,7 @@ class FilterResult:
     decisions: tuple[CandidateDecision, ...]
 
     @property
-    def eligible_executor_ids(self) -> list[int]:
+    def eligible_executor_ids(self) -> list[int | str]:
         return [decision.executor_id for decision in self.decisions if decision.eligible]
 
     @property

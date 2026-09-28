@@ -29,7 +29,7 @@ Go-сервис получает результат Decision Engine из Kafka t
 - `event_type` равен `ExecutorDecisionCompleted`;
 - `event_version` равен `1`;
 - `order_id` — непустая строка; Decision Engine возвращает исходный идентификатор AIS без преобразования;
-- `balanced_candidates` не пуст;
+- `balanced_candidates` может быть пустым, если допустимых исполнителей нет;
 - каждый `executor_id` встречается один раз;
 - кандидаты передаются в порядке `rank`: `1`, `2`, `3` и далее без пропусков;
 - `ml_score`, `effective_load` и `capacity` — конечные числа;

@@ -1,0 +1,8 @@
+.venv
+.pytest_cache
+__pycache__
+*.py[cod]
+data
+reports
+tests
+models/feature-extractor/classifier/best/model.safetensors

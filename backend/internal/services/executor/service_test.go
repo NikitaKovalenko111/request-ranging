@@ -46,6 +46,7 @@ func (f *fakeEvents) MarkProcessed(context.Context, string) error {
 }
 
 func TestApplyStoresSkillsAndPreservesRuntime(t *testing.T) {
+	dailyLimit := 50
 	lastAssignmentAt := time.Date(2026, 9, 27, 9, 0, 0, 0, time.UTC)
 	postgres := &fakePostgres{current: &executormodel.Executor{
 		ID: "executor-1", Version: 1, Active: true, Capacity: 1,
@@ -57,7 +58,7 @@ func TestApplyStoresSkillsAndPreservesRuntime(t *testing.T) {
 	service := NewService(postgres, redis, events)
 	err := service.Apply(context.Background(), eventmodel.Envelope{ID: "event-1", Type: executormodel.EventTypeUpdated}, executormodel.SnapshotPayload{
 		ID: "executor-1", Version: 2, Active: true, Capacity: 2,
-		Skills: []string{"Go", "PostgreSQL"}, Attributes: map[string]any{},
+		DailyLimit: &dailyLimit, Skills: []string{"Go", "PostgreSQL"}, Attributes: map[string]any{},
 	})
 	if err != nil {
 		t.Fatalf("Apply() error = %v", err)
@@ -67,5 +68,8 @@ func TestApplyStoresSkillsAndPreservesRuntime(t *testing.T) {
 	}
 	if redis.saved == nil || !events.processed {
 		t.Fatalf("redis=%+v eventProcessed=%v", redis.saved, events.processed)
+	}
+	if got := postgres.saved.Attributes["max_daily_limit"]; got != dailyLimit {
+		t.Fatalf("max_daily_limit = %v, want %d", got, dailyLimit)
 	}
 }

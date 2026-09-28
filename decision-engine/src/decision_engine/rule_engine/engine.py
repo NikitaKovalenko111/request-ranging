@@ -5,7 +5,7 @@ from collections.abc import Iterable, Sequence
 from .domain import CandidateDecision, Executor, FilterResult, Order, RuleViolation
 from .dynamic_rules import DistributionRule
 from .rule_evaluator import DynamicRuleEvaluator
-from .rules import DEFAULT_RULES, Rule
+from .rules import DEFAULT_RULES, INTEGRATION_RULES, Rule
 
 
 class RuleEngine:
@@ -79,3 +79,7 @@ class RuleEngine:
 
 def default_rule_engine(*, collect_all_violations: bool = True) -> RuleEngine:
     return RuleEngine(DEFAULT_RULES, collect_all_violations=collect_all_violations)
+
+
+def integration_rule_engine(*, collect_all_violations: bool = True) -> RuleEngine:
+    return RuleEngine(INTEGRATION_RULES, collect_all_violations=collect_all_violations)

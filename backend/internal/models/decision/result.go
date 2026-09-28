@@ -49,10 +49,6 @@ func (r Result) Validate() error {
 	if strings.TrimSpace(r.OrderID) == "" {
 		return fmt.Errorf("%w: order_id must not be empty", ErrInvalidResult)
 	}
-	if len(r.BalancedCandidates) == 0 {
-		return fmt.Errorf("%w: balanced_candidates must not be empty", ErrInvalidResult)
-	}
-
 	executorIDs := make(map[string]struct{}, len(r.BalancedCandidates))
 	for index, candidate := range r.BalancedCandidates {
 		expectedRank := index + 1

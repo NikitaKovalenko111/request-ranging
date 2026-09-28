@@ -19,7 +19,11 @@ All modules share one namespace:
 - decision_engine.pipeline
 - decision_engine.publisher
 
-Feature Extractor remains a separate project and is not part of this merge.
+The production command decision-engine-worker consumes AIS order events,
+loads backend-owned profiles and runtime load from Redis, runs the complete
+pipeline and publishes ExecutorDecisionCompleted to decision.result.v1. By
+default it uses the local classifier, KeyBERT and embedding skill matching.
+Set FEATURE_EXTRACTOR_MODE=heuristic only for a lightweight local fallback.
 
 ## Install and test
 
@@ -52,7 +56,7 @@ DecisionPipeline accepts a PipelineOrder and ExecutorProfile list. Rule Engine
 runs first; Feature Extractor receives only eligible executors. Its async
 decide method returns all stage results and selected_executor_id. Local runs can
 use HeuristicFeatureExtractor, HeuristicRanker and InMemoryLoadRepository;
-production can inject PredictorFeatureExtractor, MLRanker and RedisLoadRepository.
+production uses MLFeatureExtractor, MLRanker and RedisHashLoadRepository.
 DecisionPipeline also requires a result publisher. Use
 KafkaDecisionResultPublisher in production and InMemoryDecisionResultPublisher
 in tests and local examples.

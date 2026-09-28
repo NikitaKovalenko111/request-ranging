@@ -51,7 +51,10 @@ class RequestPredictor:
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_dir)
 
         print("Загрузка модели...", flush=True)
-        self.model = RequestClassifier(model_name=str(self.model_dir))
+        self.model = RequestClassifier(
+            model_name=str(self.model_dir),
+            load_pretrained=False,
+        )
         state_dict = torch.load(
             weights_path,
             map_location=self.device,

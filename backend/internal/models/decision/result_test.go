@@ -47,6 +47,14 @@ func TestResultValidateRejectsEmptyOrderID(t *testing.T) {
 	}
 }
 
+func TestResultValidateAllowsNoEligibleCandidates(t *testing.T) {
+	result := validResult()
+	result.BalancedCandidates = nil
+	if err := result.Validate(); err != nil {
+		t.Fatalf("Validate() error = %v", err)
+	}
+}
+
 func validResult() Result {
 	var result Result
 	_ = json.Unmarshal([]byte(`{

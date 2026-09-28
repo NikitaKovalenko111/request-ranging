@@ -3,7 +3,7 @@
 import torch
 import torch.nn as nn
 
-from transformers import AutoModel
+from transformers import AutoConfig, AutoModel
 
 from .config import MODEL_NAME, NUM_LABELS
 
@@ -14,10 +14,16 @@ class RequestClassifier(nn.Module):
         model_name: str = MODEL_NAME,
         num_labels: dict = NUM_LABELS,
         dropout: float = 0.2,
+        load_pretrained: bool = True,
     ):
         super().__init__()
 
-        self.encoder = AutoModel.from_pretrained(model_name)
+        if load_pretrained:
+            self.encoder = AutoModel.from_pretrained(model_name)
+        else:
+            self.encoder = AutoModel.from_config(
+                AutoConfig.from_pretrained(model_name)
+            )
 
         hidden_size = self.encoder.config.hidden_size
 

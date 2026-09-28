@@ -113,9 +113,9 @@ ARRAY_OPERATORS = (
 
 DEFAULT_FIELD_REGISTRY = FieldRegistry(
     (
-        FieldDefinition(OperandSource.ORDER, "id", FieldType.NUMBER, "ID заявки", NUMBER_OPERATORS, lambda item: item.id),
-        FieldDefinition(OperandSource.ORDER, "parent_id", FieldType.NUMBER, "ID родительской заявки", NUMBER_OPERATORS, lambda item: item.parent_id),
-        FieldDefinition(OperandSource.ORDER, "user_id", FieldType.NUMBER, "ID пользователя", NUMBER_OPERATORS, lambda item: item.user_id),
+        FieldDefinition(OperandSource.ORDER, "id", FieldType.STRING, "ID заявки", STRING_OPERATORS, lambda item: item.id),
+        FieldDefinition(OperandSource.ORDER, "parent_id", FieldType.STRING, "ID родительской заявки", STRING_OPERATORS, lambda item: item.parent_id),
+        FieldDefinition(OperandSource.ORDER, "user_id", FieldType.STRING, "ID пользователя", STRING_OPERATORS, lambda item: item.user_id),
         FieldDefinition(OperandSource.ORDER, "sum", FieldType.NUMBER, "Сумма заявки", NUMBER_OPERATORS, lambda item: item.sum),
         FieldDefinition(OperandSource.ORDER, "client_msp", FieldType.STRING, "МСП клиента", STRING_OPERATORS, lambda item: item.client_msp),
         FieldDefinition(OperandSource.ORDER, "executor_msp", FieldType.STRING, "МСП исполнителя", STRING_OPERATORS, lambda item: item.executor_msp),
@@ -123,7 +123,7 @@ DEFAULT_FIELD_REGISTRY = FieldRegistry(
         FieldDefinition(OperandSource.ORDER, "subject", FieldType.STRING, "Тематика", STRING_OPERATORS, lambda item: item.subject),
         FieldDefinition(OperandSource.ORDER, "vip", FieldType.BOOLEAN, "VIP", BOOLEAN_OPERATORS, lambda item: item.vip),
         FieldDefinition(OperandSource.ORDER, "status", FieldType.STRING, "Статус заявки", STRING_OPERATORS, lambda item: item.status),
-        FieldDefinition(OperandSource.EXECUTOR, "user_id", FieldType.NUMBER, "ID исполнителя", NUMBER_OPERATORS, lambda item: item.user_id),
+        FieldDefinition(OperandSource.EXECUTOR, "user_id", FieldType.STRING, "ID исполнителя", STRING_OPERATORS, lambda item: item.user_id),
         FieldDefinition(OperandSource.EXECUTOR, "active", FieldType.BOOLEAN, "Активен", BOOLEAN_OPERATORS, lambda item: item.active),
         FieldDefinition(OperandSource.EXECUTOR, "daily_count", FieldType.NUMBER, "Заявок за сутки", NUMBER_OPERATORS, lambda item: item.daily_count),
         FieldDefinition(OperandSource.EXECUTOR, "min_accept_sum", FieldType.NUMBER, "Минимальная сумма", NUMBER_OPERATORS, lambda item: item.settings.min_accept_sum),
@@ -133,9 +133,9 @@ DEFAULT_FIELD_REGISTRY = FieldRegistry(
         FieldDefinition(OperandSource.EXECUTOR, "client_msp", FieldType.STRING, "МСП клиента исполнителя", STRING_OPERATORS, lambda item: item.settings.client_msp),
         FieldDefinition(OperandSource.EXECUTOR, "executor_msp", FieldType.STRING, "МСП исполнителя", STRING_OPERATORS, lambda item: item.settings.executor_msp),
         FieldDefinition(OperandSource.EXECUTOR, "order_type", FieldType.STRING, "Тип заявки исполнителя", STRING_OPERATORS, lambda item: item.settings.order_type),
-        FieldDefinition(OperandSource.EXECUTOR, "allowed_order_types", FieldType.STRING_ARRAY, "Допустимые типы заявок", ARRAY_OPERATORS, lambda item: (item.settings.order_type,)),
+        FieldDefinition(OperandSource.EXECUTOR, "allowed_order_types", FieldType.STRING_ARRAY, "Допустимые типы заявок", ARRAY_OPERATORS, lambda item: item.settings.order_types or (() if item.settings.order_type is None else (item.settings.order_type,))),
         FieldDefinition(OperandSource.EXECUTOR, "subject", FieldType.STRING, "Тематика исполнителя", STRING_OPERATORS, lambda item: item.settings.subject),
-        FieldDefinition(OperandSource.EXECUTOR, "subjects", FieldType.STRING_ARRAY, "Тематики исполнителя", ARRAY_OPERATORS, lambda item: () if item.settings.subject is None else (item.settings.subject,)),
+        FieldDefinition(OperandSource.EXECUTOR, "subjects", FieldType.STRING_ARRAY, "Тематики исполнителя", ARRAY_OPERATORS, lambda item: item.settings.subjects or (() if item.settings.subject is None else (item.settings.subject,))),
         FieldDefinition(OperandSource.EXECUTOR, "vip", FieldType.BOOLEAN, "VIP-допуск", BOOLEAN_OPERATORS, lambda item: item.settings.vip),
         FieldDefinition(OperandSource.EXECUTOR, "vip_allowed", FieldType.BOOLEAN, "VIP-допуск", BOOLEAN_OPERATORS, lambda item: item.settings.vip),
         FieldDefinition(OperandSource.EXECUTOR, "max_daily_limit", FieldType.NUMBER, "Суточный лимит", NUMBER_OPERATORS, lambda item: item.settings.max_daily_limit),

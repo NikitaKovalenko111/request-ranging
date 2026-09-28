@@ -53,9 +53,16 @@ func (s *Service) Apply(
 	if !started {
 		return nil
 	}
+	attributes := make(map[string]any, len(payload.Attributes)+1)
+	for key, item := range payload.Attributes {
+		attributes[key] = item
+	}
+	if payload.DailyLimit != nil {
+		attributes["max_daily_limit"] = *payload.DailyLimit
+	}
 	value := &executormodel.Executor{
 		ID: payload.ID, Version: payload.Version, Active: payload.Active,
-		Capacity: payload.Capacity, Skills: payload.Skills, Attributes: payload.Attributes,
+		Capacity: payload.Capacity, Skills: payload.Skills, Attributes: attributes,
 	}
 	current, err := s.postgres.GetByID(ctx, payload.ID)
 	switch {

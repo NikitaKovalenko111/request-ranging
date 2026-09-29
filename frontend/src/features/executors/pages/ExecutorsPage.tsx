@@ -10,7 +10,7 @@ import { useToast } from '../../../shared/components/Toast';
 import type { Executor, ExecutorFilters } from '../../../types/executor';
 
 export function ExecutorsPage() {
-  const [filters, setFilters] = useState<ExecutorFilters>({ limit: 20, offset: 0 });
+  const [filters, setFilters] = useState<ExecutorFilters>({ limit: 1000, offset: 0 });
   const [confirm, setConfirm] = useState<Executor | null>(null);
   const [selected, setSelected] = useState<Executor | null>(null);
   const { data, isLoading, isError, refetch } = useExecutors(filters);

@@ -9,7 +9,6 @@ import { EmptyState, ErrorState, LoadingState } from '../../../shared/components
 import { formatDuration, formatNumber } from '../../../shared/format';
 import { useDashboardRealtime } from '../../../shared/hooks/useDashboardRealtime';
 import { ExecutorLoadChart } from '../components/ExecutorLoadChart';
-import { FairnessCard } from '../components/FairnessCard';
 import { KpiCard } from '../components/KpiCard';
 import { LatestAssignmentsTable } from '../components/LatestAssignmentsTable';
 import { OrdersTimelineChart } from '../components/OrdersTimelineChart';
@@ -64,6 +63,6 @@ function DashboardContent({ data }: { data: DashboardData }) {
       <KpiCard label="Ожидают подтверждения" value={formatNumber(summary.pendingAssignments)} icon={Activity} tone="amber" />
     </section>
     <div className="dashboard-grid"><OrdersTimelineChart data={data.timeline} /><ExecutorLoadChart data={data.executorLoads} /></div>
-    <div className="dashboard-bottom"><FairnessCard data={data} /><LatestAssignmentsTable items={data.latestAssignments} /></div>
+    <div className="dashboard-bottom"><LatestAssignmentsTable items={data.latestAssignments} /></div>
   </>;
 }

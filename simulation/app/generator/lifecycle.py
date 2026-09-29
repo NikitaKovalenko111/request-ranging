@@ -120,7 +120,7 @@ class LifecycleSimulator:
                 if tick % 6 == 0:
                     async with async_session_factory() as session:
                         exec_repo = ExecutorRepository(session)
-                        executors = await exec_repo.list_executors(limit=50)
+                        executors = await exec_repo.list_executors(limit=1000)
 
                     if executors:
                         target = random.choice(executors)

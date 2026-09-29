@@ -6,16 +6,16 @@ from simulation.app.generator.load import (
     LoadGenerator,
 )
 from simulation.app.generator.populate_10k import generate_10k_orders_data
-from simulation.app.generator.seeds import PRESET_EXECUTORS
+from simulation.app.generator.seeds import PRESET_EXECUTORS, TOTAL_PRESET_EXECUTORS
 
 
 def test_seed_pool_is_sized_for_4k_per_hour() -> None:
     active = [executor for executor in PRESET_EXECUTORS if executor["active"]]
     active_capacity = sum(float(executor["capacity"]) for executor in active)
 
-    assert len(PRESET_EXECUTORS) == 40
-    assert len(active) == 38
-    assert active_capacity == 62.0
+    assert len(PRESET_EXECUTORS) == TOTAL_PRESET_EXECUTORS == 200
+    assert len(active) == 198
+    assert active_capacity == 382.0
 
     # Little's law sizing for the current simulator:
     # 4000 orders/hour, a conservative 30-second end-to-end residence time,

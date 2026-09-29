@@ -387,6 +387,8 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
 # Extra capacity for sustained load tests. Hard constraints are intentionally
 # broad, while skills stay diverse so that the ML ranker can still distinguish
 # candidates. Existing SQLite volumes receive only the missing executor IDs.
+TOTAL_PRESET_EXECUTORS = 200
+
 ADDITIONAL_EXECUTOR_SKILLS = [
     ["ContractLaw", "CorporateLaw", "DueDiligence", "Negotiations"],
     ["ComplianceAudit", "115-FZ", "GDPR_Compliance", "RiskAnalysis"],
@@ -409,7 +411,10 @@ ADDITIONAL_EXECUTOR_SKILLS = [
     ["Python", "ContractLaw", "FinancialModeling", "Negotiations"],
 ]
 
-for executor_number, skills in enumerate(ADDITIONAL_EXECUTOR_SKILLS, start=22):
+for executor_number in range(22, TOTAL_PRESET_EXECUTORS + 1):
+    skills = ADDITIONAL_EXECUTOR_SKILLS[
+        (executor_number - 22) % len(ADDITIONAL_EXECUTOR_SKILLS)
+    ]
     PRESET_EXECUTORS.append(
         {
             "executor_id": f"executor-{executor_number:02d}",

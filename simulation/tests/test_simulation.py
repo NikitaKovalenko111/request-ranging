@@ -15,8 +15,8 @@ async def test_simulation_burst_and_status(client):
     assert resp.status_code == 200
     status_data = resp.json()
     assert status_data["orders"]["total"] >= 100
-    assert status_data["executors"]["total"] >= 20
-    assert status_data["executors"]["active"] >= 15
+    assert status_data["executors"]["total"] >= 40
+    assert status_data["executors"]["active"] >= 38
 
     # 3. Test instant 1000 orders burst ("в один момент приходило 1к заявок")
     resp_1k = await client.post("/api/v1/simulation/burst", json={"count": 1000})

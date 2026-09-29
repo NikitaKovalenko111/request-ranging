@@ -14,6 +14,7 @@ logger = logging.getLogger("ais.load_generator")
 # НАСТРОЙКИ СКОРОСТИ И ПИКОВОЙ НАГРУЗКИ (МОЖНО МЕНЯТЬ ПРЯМО ЗДЕСЬ)
 # ==============================================================================
 TARGET_ORDERS_PER_HOUR: float = 4000.0   # Скорость потока: заявок в час (в среднем ~1.11 заявки/сек)
+GENERATED_ORDER_WEIGHTS: tuple[float, ...] = (0.5, 1.0, 1.2, 1.5, 2.0)
 MAX_PEAK_PER_SECOND: int = 5             # Максимальный пик: заявок в секунду во время скачка
 SPIKE_PROBABILITY: float = 0.08          # Вероятность скачка (~8% времени - всплеск, 92% - ровный линейный поток)
 MIN_SPIKE_ORDERS: int = 2                # Минимальный размер скачка при всплеске (от 2 до 5)
@@ -59,7 +60,9 @@ class LoadGenerator:
     ) -> Dict[str, Any]:
         order_id = f"order-{order_idx:05d}-{uuid.uuid4().hex[:6]}"
         is_vip = random.random() < 0.20
-        weight = round(random.choice([0.5, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0]), 2)
+        # Keep every generated order assignable to at least one seeded
+        # executor. Seeded capacity starts at 0.5 and reaches 2.0.
+        weight = round(random.choice(GENERATED_ORDER_WEIGHTS), 2)
         sum_value = random.choice([
             random.randint(50_000, 300_000),
             random.randint(300_000, 1_000_000),

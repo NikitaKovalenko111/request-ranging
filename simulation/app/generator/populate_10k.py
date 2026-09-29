@@ -95,7 +95,7 @@ def generate_10k_orders_data() -> list:
         else:
             order_sum = random.randint(2_500_000, 15_000_000)
             vip = random.random() < 0.5
-            weight = random.choice([1.8, 2.0, 2.5, 3.0])
+            weight = random.choice([1.5, 1.8, 2.0])
 
         created_dt = base_time + timedelta(seconds=i * 12)
         created_str = created_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -143,7 +143,7 @@ def generate_10k_orders_data() -> list:
         else:
             order_sum = random.randint(3_000_000, 18_000_000)
             vip = random.random() < 0.55
-            weight = random.choice([1.8, 2.0, 2.5, 3.0])
+            weight = random.choice([1.5, 1.8, 2.0])
 
         created_dt = base_time + timedelta(seconds=i * 10)
         created_str = created_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -250,7 +250,7 @@ def generate_10k_orders_data() -> list:
         else:
             order_sum = random.randint(2_500_000, 20_000_000)
             vip = random.random() < 0.50
-            weight = random.choice([1.8, 2.0, 2.5, 3.0])
+            weight = random.choice([1.5, 1.8, 2.0])
 
         created_dt = base_time + timedelta(seconds=i * 6)
         created_str = created_dt.strftime("%Y-%m-%dT%H:%M:%SZ")

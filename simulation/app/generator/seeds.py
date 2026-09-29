@@ -384,6 +384,64 @@ PRESET_EXECUTORS: List[Dict[str, Any]] = [
 ]
 
 
+# Extra capacity for sustained load tests. Hard constraints are intentionally
+# broad, while skills stay diverse so that the ML ranker can still distinguish
+# candidates. Existing SQLite volumes receive only the missing executor IDs.
+ADDITIONAL_EXECUTOR_SKILLS = [
+    ["ContractLaw", "CorporateLaw", "DueDiligence", "Negotiations"],
+    ["ComplianceAudit", "115-FZ", "GDPR_Compliance", "RiskAnalysis"],
+    ["FinancialModeling", "Accounting", "TaxAudit", "Excel_Advanced"],
+    ["Litigation", "Arbitration", "ConflictResolution", "ContractLaw"],
+    ["Python", "FastAPI", "PostgreSQL", "Docker"],
+    ["Go", "Microservices", "Redis", "Kubernetes"],
+    ["DataScience", "MachineLearning", "PowerBI", "Python"],
+    ["BPMN", "AgileScrum", "Jira", "PublicSpeaking"],
+    ["CyberSecurity", "Linux", "Git", "ComplianceAudit"],
+    ["ForensicAudit", "CostOptimization", "M&A", "RiskAnalysis"],
+    ["1C_Enterprise", "Accounting", "Excel_Advanced", "FinancialModeling"],
+    ["LaborLaw", "CorporateLaw", "Negotiations", "ConflictResolution"],
+    ["ContractLaw", "English_C1", "German_B2", "DueDiligence"],
+    ["Chinese_HSK4", "English_C1", "Negotiations", "RiskAnalysis"],
+    ["React", "TypeScript", "Figma", "UI/UX"],
+    ["Java", "PostgreSQL", "Docker", "Microservices"],
+    ["CryptoAssets", "ComplianceAudit", "115-FZ", "FinancialModeling"],
+    ["TaxAudit", "ForensicAudit", "PowerBI", "Accounting"],
+    ["Python", "ContractLaw", "FinancialModeling", "Negotiations"],
+]
+
+for executor_number, skills in enumerate(ADDITIONAL_EXECUTOR_SKILLS, start=22):
+    PRESET_EXECUTORS.append(
+        {
+            "executor_id": f"executor-{executor_number:02d}",
+            "active": True,
+            "capacity": 2.0,
+            "daily_limit": 150,
+            "skills": skills,
+            "attributes": {
+                "min_accept_sum": 0,
+                "max_accept_sum": 25_000_000,
+                "client_msp": ["small", "medium", "large"],
+                "executor_msp": ["legal", "consulting", "claims_dept"],
+                "order_types": [
+                    "LEGAL_REVIEW",
+                    "CONSULTATION",
+                    "CLAIM_PROCESSING",
+                ],
+                "subjects": ["contract", "claims", "payments", "compliance"],
+                "vip_allowed": True,
+                "regions": [
+                    "ural",
+                    "siberia",
+                    "central",
+                    "volga",
+                    "south",
+                    "northwest",
+                ],
+            },
+        }
+    )
+
+
 def get_random_skills(k: int = 3) -> List[str]:
     return random.sample(SKILLS_POOL, min(k, len(SKILLS_POOL)))
 

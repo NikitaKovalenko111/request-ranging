@@ -153,7 +153,7 @@ effective_load = (active_weight + pending_weight) / capacity
 
 ### Резервирование
 
-Lua-скрипт в Redis атомарно контролирует наличие активного исполнителя, отсутствие другого назначения заявки, отсутствие конкурентной reservation и ограничение `current_load + order_weight <= capacity`.
+Redis атомарно контролирует наличие активного исполнителя, отсутствие другого назначения заявки, отсутствие конкурентной reservation и ограничение `current_load + order_weight <= capacity`.
 
 После успешной reservation создается Assignment, сохраняется Decision Trace и выполняется HTTP-запрос во внешнюю АИС.
 
